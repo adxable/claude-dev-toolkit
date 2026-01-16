@@ -1,0 +1,64 @@
+{
+  "name": "frontend-dev-toolkit",
+  "description": "A comprehensive development workflow plugin for React/TypeScript frontend applications. Includes planning, implementation, verification, code review, and utility commands.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Adrian Oleskiewicz",
+    "email": "adxablee@gmail.com"
+  },
+  "keywords": [
+    "react",
+    "typescript",
+    "frontend",
+    "development",
+    "workflow",
+    "code-review",
+    "tailwind",
+    "tanstack-query"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-company/frontend-dev-toolkit"
+  },
+  "license": "MIT",
+  "engines": {
+    "claude-code": ">=1.0.0"
+  },
+  "configuration": {
+    "projectConfig": {
+      "type": "object",
+      "description": "Project-specific configuration stored in .claude/frontend-dev-toolkit.json",
+      "properties": {
+        "techStack": {
+          "type": "object",
+          "properties": {
+            "core": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Core technologies (react, typescript, tailwind)"
+            },
+            "optional": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Optional technologies (tanstack-query, react-router, zod, etc.)"
+            }
+          }
+        },
+        "paths": {
+          "type": "object",
+          "properties": {
+            "src": { "type": "string", "default": "src" },
+            "components": { "type": "string", "default": "src/components" },
+            "features": { "type": "string", "default": "src/features" },
+            "specs": { "type": "string", "default": ".claude/specs" }
+          }
+        },
+        "packageManager": {
+          "type": "string",
+          "enum": ["npm", "yarn", "pnpm", "bun"],
+          "default": "npm"
+        }
+      }
+    }
+  }
+}
