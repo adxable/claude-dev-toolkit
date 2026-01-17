@@ -16,8 +16,5 @@
     "code-review",
     "browser-testing"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/adxable/adx-toolkit.git"
-  }
+  "repository": "https://github.com/adxable/adx-toolkit.git"
 }
