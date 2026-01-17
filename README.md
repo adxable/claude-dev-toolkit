@@ -19,11 +19,30 @@ A Claude Code plugin for React/TypeScript frontend development with autonomous a
 
 ## Quick Start
 
+### One-liner Install (Recommended)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/adxable/adx-toolkit/main/install.sh | bash
+```
+
+This will:
+1. Clone the plugin to `~/.claude/plugins/adx-toolkit`
+2. Launch interactive setup wizard
+3. Configure your project with your tech stack preferences
+
+### Manual Install
+
 ```bash
 # Clone to your plugins directory
-git clone <repo> ~/.claude/plugins/adx-toolkit
+git clone https://github.com/adxable/adx-toolkit.git ~/.claude/plugins/adx-toolkit
 
-# Or symlink for development
+# Run interactive setup
+~/.claude/plugins/adx-toolkit/setup.sh
+```
+
+### Development (Symlink)
+
+```bash
 ln -s /path/to/adx-toolkit ~/.claude/plugins/adx-toolkit
 ```
 
@@ -450,29 +469,40 @@ Persistent context across sessions.
 
 ## Installation
 
-### 1. Clone the plugin
+### Recommended: Interactive Setup
 
 ```bash
-git clone <repo> ~/.claude/plugins/adx-toolkit
+# Install and configure in one command
+curl -fsSL https://raw.githubusercontent.com/adxable/adx-toolkit/main/install.sh | bash
 ```
 
-### 2. Copy CLAUDE.md to your project
+The setup wizard will ask you about:
+- **Project directory** - Where to configure ADX
+- **Tech stack** - Router (TanStack/React Router/Next.js), State manager (Zustand/Jotai/Redux)
+- **Features** - Hooks, MCP servers, memory system
+- **Agents** - Which specialized agents to enable
+
+### Manual Installation
 
 ```bash
+# 1. Clone the plugin
+git clone https://github.com/adxable/adx-toolkit.git ~/.claude/plugins/adx-toolkit
+
+# 2. Run setup for your project
+cd /your-project
+~/.claude/plugins/adx-toolkit/setup.sh
+
+# Or copy files manually:
 cp ~/.claude/plugins/adx-toolkit/CLAUDE.md /your-project/CLAUDE.md
-```
-
-### 3. (Optional) Copy hooks and settings
-
-```bash
 cp -r ~/.claude/plugins/adx-toolkit/hooks /your-project/.claude/hooks
 cp ~/.claude/plugins/adx-toolkit/settings.json /your-project/.claude/settings.json
-cp ~/.claude/plugins/adx-toolkit/mcp.json /your-project/.claude/mcp.json
 ```
 
-### 4. Customize CLAUDE.md for your project
+### Reconfigure Existing Project
 
-Edit the tech stack, conventions, and anti-patterns.
+```bash
+~/.claude/plugins/adx-toolkit/setup.sh
+```
 
 ---
 

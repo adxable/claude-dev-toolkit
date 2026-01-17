@@ -1,12 +1,12 @@
 {
-  "name": "adx-toolkit-marketplace",
+  "name": "adx-marketplace",
   "owner": {
     "name": "Adrian Oleskiewicz",
     "email": "adxablee@gmail.com"
   },
   "plugins": [
     {
-      "name": "adx-toolkit",
+      "name": "adx",
       "source": {
         "source": "url",
         "url": "https://github.com/adxable/adx-toolkit.git"
