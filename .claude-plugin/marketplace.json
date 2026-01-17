@@ -1,17 +1,17 @@
 {
-  "name": "frontend-dev-toolkit-marketplace",
+  "name": "adx-toolkit-marketplace",
   "owner": {
-    "name": "Adrian Ol",
+    "name": "Adrian Oleskiewicz",
     "email": "adxablee@gmail.com"
   },
   "plugins": [
     {
-      "name": "frontend-dev-toolkit",
+      "name": "adx-toolkit",
       "source": {
         "source": "url",
-        "url": "https://github.com/adxable/claude-dev-toolkit.git"
+        "url": "https://github.com/adxable/adx-toolkit.git"
       },
-      "description": "A comprehensive development workflow plugin for React/TypeScript frontend applications",
+      "description": "Autonomous agentic workflow plugin for React/TypeScript frontend development. Features /ship, /ralph, browser verification, 9 specialized agents.",
       "version": "2.0.0"
     }
   ]

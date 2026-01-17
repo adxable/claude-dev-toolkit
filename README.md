@@ -1,143 +1,408 @@
-# Frontend Dev Toolkit
+# ADX Toolkit
 
-A comprehensive Claude Code plugin for React/TypeScript frontend development workflows. Includes planning, implementation, verification, code review, intelligent hooks, context management, and MCP integrations.
+A Claude Code plugin for React/TypeScript frontend development with autonomous agentic workflows.
 
-## What's New in v2.0
-
-- **Hooks System** - Python-based hooks for logging, smart context loading, and session management
-- **Memory System** - Persistent context across sessions with CLAUDE.md and decision logs
-- **Smart Context Loader** - Auto-detects work context and suggests relevant skills
-- **Session Summaries** - Automatic summary generation on session end
-- **MCP Integrations** - Pre-configured servers for Playwright, sequential-thinking, and more
+> **Plugin ID:** `adx-toolkit`
+> **Commands:** `adx:plan`, `adx:ship`, `adx:review`, `adx:ralph`, etc.
 
 ## Features
 
-- **Planning Commands** - Structured feature, bug, and chore planning
-- **Implementation Commands** - Guided implementation from plans
-- **Verification Commands** - Parallel type checking, linting, and build verification
-- **Code Review Commands** - Automated code review with inline comments
-- **Utility Commands** - Git commit, PR creation, and project utilities
-- **Intelligent Hooks** - Context-aware assistance and session tracking
-- **Memory System** - Maintain project knowledge across sessions
+- **Agentic Workflow** - `/ship` command runs full pipeline automatically
+- **RALPH Integration** - Fully autonomous loop until PR created (fire and forget)
+- **Browser Verification** - Visual testing with Claude Chrome extension (fix-verify loop)
+- **Specialized Agents** - Code review, refactoring, git automation, research, browser testing
+- **Smart Commands** - Plan, implement, verify, review, commit, PR
+- **Project Conventions** - CLAUDE.md enforces your patterns
+- **Hooks System** - Context detection, session summaries, logging
 
-## Prerequisites
-
-- Python 3.8+ (3.11+ recommended)
-- [uv](https://github.com/astral-sh/uv) - Fast Python package installer
-
-```bash
-# Install uv if not present
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-## Installation
-
-```bash
-# Copy plugin to your Claude plugins directory
-cp -r frontend-dev-toolkit ~/.claude/plugins/
-
-# Or symlink for development
-ln -s /path/to/frontend-dev-toolkit ~/.claude/plugins/frontend-dev-toolkit
-```
+---
 
 ## Quick Start
 
-1. **Copy configuration files to your project:**
-
 ```bash
-# Copy settings.json to your project's .claude directory
-cp settings.json /your-project/.claude/settings.json
+# Clone to your plugins directory
+git clone <repo> ~/.claude/plugins/adx-toolkit
 
-# Copy MCP config
-cp mcp.json /your-project/.claude/mcp.json
-
-# Copy memory templates
-cp -r memory/ /your-project/.claude/memory/
-
-# Copy hooks
-cp -r hooks/ /your-project/hooks/
+# Or symlink for development
+ln -s /path/to/adx-toolkit ~/.claude/plugins/adx-toolkit
 ```
-
-2. **Run the setup command:**
-
-```bash
-/frontend-dev-toolkit:setup
-```
-
-3. **Fill in your CLAUDE.md:**
-
-Edit `.claude/memory/CLAUDE.md` with your project's specifics.
 
 ---
 
 ## Commands
 
-### Setup & Configuration
+### Full Workflow (Autonomous)
 
-| Command | Description |
-|---------|-------------|
-| `/setup` | Interactive project setup - configures tech stack and paths |
+```bash
+# Single-pass autonomous (you may need to intervene on errors)
+/ship "add user authentication with JWT"
 
-### Development Workflow
+# With browser verification (recommended for UI features)
+/ship "add login form" --browser
 
-| Command | Description |
-|---------|-------------|
-| `/dev:feature <description>` | Create a feature implementation plan |
-| `/dev:bug <description>` | Create a bug fix plan |
-| `/dev:chore <description>` | Create a maintenance/refactoring plan |
-| `/dev:implement <plan-path>` | Implement a plan step-by-step |
-| `/dev:refactor <target>` | Guided code refactoring |
-| `/dev:simplify <scope>` | Remove over-engineering from code |
-| `/dev:patch <description>` | Quick patch/hotfix |
-| `/dev:resolve-conflicts` | Help resolve git merge conflicts |
+# Fully autonomous loop until PR (fire and forget)
+/ralph "add dashboard with charts" --browser --monitor
+```
 
-### Verification
+**Modes:**
+- `/ship` - Single pass through pipeline, stops on completion or error
+- `/ralph` - Continuous loop until PR created, handles failures automatically
 
-| Command | Description |
-|---------|-------------|
-| `/verify:verify [url]` | Run full verification loop (types, lint, build, browser) |
-| `/verify:types` | Run TypeScript type checking |
-| `/verify:lint` | Run ESLint |
+### Individual Commands
 
-### Code Review
+| Command | Description | Agent Used |
+|---------|-------------|------------|
+| `/plan <description>` | Research and create implementation plan | `explorer` |
+| `/implement <plan-path>` | Execute plan step by step | `web-researcher` (if stuck) |
+| `/refactor [files]` | Clean up code, remove technical debt | `refactorer` |
+| `/verify [url]` | Type check + lint + build loop | - |
+| `/review [files]` | Code review, generate report | `code-reviewer`, `performance-auditor`, `accessibility-tester` |
+| `/review --browser` | Code review + visual verification | Above + `browser-tester` |
+| `/review --browser-only` | Visual verification only | `browser-tester` |
+| `/commit [type]` | Create git commit | `git-automator` |
+| `/pr [base]` | Create pull request | `git-automator` |
+| `/ralph <description>` | Fully autonomous loop until PR | All agents (via RALPH) |
 
-| Command | Description |
-|---------|-------------|
-| `/review:review` | Full code review of branch changes |
+### Workflow Diagram
 
-### Utilities
+```
+/plan "feature description"
+    │
+    ↓ creates .claude/plans/plan-{name}.md
 
-| Command | Description |
-|---------|-------------|
-| `/utils:commit` | Generate and create git commit |
-| `/utils:pr` | Create pull request with description |
-| `/utils:clean-comments` | Remove [CR] review comments |
+/implement .claude/plans/plan-{name}.md
+    │
+    ↓ creates/modifies files
+
+/refactor
+    │
+    ↓ cleans up code (refactorer agent)
+
+/verify
+    │
+    ↓ type check + lint + build
+
+/review --browser
+    │
+    ├── Phase 1: Code Review (3 agents parallel)
+    │   ├── code-reviewer
+    │   ├── performance-auditor
+    │   └── accessibility-tester
+    │
+    └── Phase 2: Browser Verification (fix-verify loop)
+        └── browser-tester
+    │
+    ↓ generates .claude/reviews/review-{date}.md
+
+/commit
+    │
+    ↓ creates commit with Co-Authored-By
+
+/pr
+    │
+    ↓ creates PR with description
+
+✓ DONE
+```
+
+---
+
+## Agents
+
+### Core Agents
+
+| Agent | Model | Purpose |
+|-------|-------|---------|
+| `explorer` | haiku | Fast codebase search and pattern discovery |
+| `web-researcher` | sonnet | Internet research for debugging and solutions |
+| `code-reviewer` | opus | Code review with markdown report output |
+| `git-automator` | sonnet | Smart commits, branches, and PRs |
+| `refactorer` | opus | Code cleanup, remove `any` types, dead code |
+| `performance-auditor` | opus | Bundle size, React re-renders, memoization |
+| `browser-tester` | opus | Visual UI testing, interaction testing, fix-verify loop |
+
+### Optional Agents
+
+| Agent | Purpose |
+|-------|---------|
+| `accessibility-tester` | WCAG compliance, a11y audits |
+| `docs-generator` | README, JSDoc, API documentation |
+
+Agents are invoked automatically by Claude when needed, or explicitly through commands.
+
+### Agent Terminal Output
+
+When agents are invoked, they display status in terminal:
+
+```
+┌─────────────────────────────────────────────────┐
+│  🌐 AGENT: browser-tester                       │
+│  📋 Task: Verify login form renders correctly   │
+│  ⚡ Model: opus                                 │
+└─────────────────────────────────────────────────┘
+
+[browser-tester] Starting dev server...
+[browser-tester] Screenshot: Login page
+[browser-tester] Issue found: Button misaligned
+[browser-tester] Fixing: LoginForm.tsx:45
+[browser-tester] Re-verifying...
+[browser-tester] ✓ Complete (Tests: 5, Issues Fixed: 1, Iterations: 2)
+```
+
+---
+
+## Browser Verification
+
+Visual and functional testing using Claude Chrome extension.
+
+### Prerequisites
+
+- Dev server running (`pnpm dev`)
+- Claude Chrome extension installed and connected
+
+### How It Works
+
+Claude Chrome extension allows Claude to see and interact with your browser:
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                    FIX-VERIFY LOOP                        │
+│                                                          │
+│    ┌─────────┐     ┌─────────┐     ┌─────────┐          │
+│    │  View   │ ──▶ │ Analyze │ ──▶ │  Fix    │          │
+│    │ Browser │     │         │     │  Code   │          │
+│    └─────────┘     └─────────┘     └────┬────┘          │
+│         ▲                               │                │
+│         │         (if still broken)     │                │
+│         └───────────────────────────────┘                │
+│                                                          │
+│    Max iterations: 5                                     │
+└──────────────────────────────────────────────────────────┘
+```
+
+Claude can:
+- **See** the browser viewport in real-time
+- **Click** buttons, links, interactive elements
+- **Type** into inputs and forms
+- **Navigate** between pages
+
+### What It Tests
+
+- **Visual verification** - Components render correctly
+- **Interaction testing** - Buttons, forms, modals work
+- **Responsive design** - Mobile, tablet, desktop
+- **State handling** - Loading, error, empty states
+
+### Usage
+
+```bash
+# Code review + browser verification
+/review --browser
+
+# Browser verification only (skip code review)
+/review --browser-only
+
+# Full ship workflow with browser
+/ship "add user dashboard" --browser
+```
+
+---
+
+## RALPH Integration (Fully Autonomous)
+
+RALPH enables continuous, self-improving development loops until project completion.
+
+### What is RALPH?
+
+RALPH (from [frankbria/ralph-claude-code](https://github.com/frankbria/ralph-claude-code)) wraps Claude Code in an autonomous loop with intelligent safeguards:
+
+- **Continuous execution** until PR created
+- **Automatic failure handling** and retries
+- **Circuit breaker** stops infinite loops
+- **Rate limiting** prevents API overuse
+- **Session continuity** across iterations
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      RALPH + /ship                           │
+│                                                             │
+│   RALPH Loop:                                               │
+│   ┌─────────────────────────────────────────────────────┐   │
+│   │  Read PROMPT.md → Execute /ship → Track Progress    │   │
+│   │       ↓                                             │   │
+│   │  Success? → PR created → EXIT_SIGNAL → Done         │   │
+│   │       ↓                                             │   │
+│   │  Failure? → Analyze → Fix → Loop again              │   │
+│   └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│   Safeguards: Circuit breaker, rate limiting, timeout       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Installation
+
+```bash
+# Install RALPH globally (one-time)
+git clone https://github.com/frankbria/ralph-claude-code.git
+cd ralph-claude-code
+./install.sh
+```
+
+### Usage
+
+```bash
+# Initialize RALPH project with adx-toolkit templates
+./scripts/ralph-init.sh "add user authentication" --browser
+
+# Start autonomous development
+cd .ralph-projects/add-user-authentication
+ralph --monitor --timeout 60
+```
+
+Or use the `/ralph` command:
+
+```bash
+/ralph "add shopping cart" --browser --monitor
+```
+
+### /ship vs /ralph
+
+| Aspect | /ship | /ralph |
+|--------|-------|--------|
+| Execution | Single pass | Loop until done |
+| Failures | Stop and report | Retry automatically |
+| Duration | Minutes | Minutes to hours |
+| Human involvement | May need intervention | Fire and forget |
+| Best for | Known scope | Complex/exploratory |
+
+### When to Use /ralph
+
+- **Overnight development** - Start before bed, wake up to PR
+- **Complex features** - Multiple unknowns, likely failures
+- **Hands-off mode** - Don't want to monitor progress
+
+---
+
+## Skills
+
+### Installed Skills (`.claude/skills/`)
+
+| Skill | Source | Purpose |
+|-------|--------|---------|
+| `frontend-design` | Anthropic | Bold UI design, avoid generic aesthetics |
+| `webapp-testing` | Anthropic | Playwright testing patterns |
+| `tdd` | obra/superpowers | Test-driven development workflow |
+
+### Plugin Skills (`skills/`)
+
+| Skill | Purpose |
+|-------|---------|
+| `browser-testing` | Visual testing patterns, fix-verify loop workflows |
+
+---
+
+## Project Conventions (CLAUDE.md)
+
+The plugin includes a `CLAUDE.md` template with your project conventions:
+
+```markdown
+## Tech Stack
+- Router: TanStack Router / React Router v7
+- State: Zustand (UI state only)
+- Server State: TanStack Query with useSuspenseQuery
+- Forms: React Hook Form + Zod
+- Styling: Tailwind + shadcn/ui
+
+## Enforced Patterns
+- useShallow for Zustand object selectors
+- Query Options Factory pattern
+- cn() for conditional Tailwind classes
+- Named exports, not default
+
+## Anti-patterns - NEVER
+- Zustand selector without useShallow
+- any in TypeScript
+- Index as key in lists
+- Inline functions for memoized children
+```
+
+---
+
+## Directory Structure
+
+```
+adx-toolkit/
+├── CLAUDE.md                    # Project conventions template
+├── .claude/
+│   ├── skills/
+│   │   ├── frontend-design/     # Anthropic official
+│   │   ├── webapp-testing/      # Anthropic official
+│   │   └── tdd/                 # obra/superpowers
+│   ├── plans/                   # /plan outputs
+│   └── reviews/                 # /review outputs
+├── skills/
+│   └── browser-testing/         # Plugin-provided skill
+│       └── SKILL.md
+├── agents/
+│   ├── explorer.md
+│   ├── web-researcher.md
+│   ├── code-reviewer.md
+│   ├── git-automator.md
+│   ├── refactorer.md
+│   ├── performance-auditor.md
+│   ├── browser-tester.md        # Browser verification agent
+│   └── optional/
+│       ├── accessibility-tester.md
+│       └── docs-generator.md
+├── commands/
+│   ├── ship.md                  # Single-pass autonomous workflow
+│   ├── ralph.md                 # RALPH loop integration
+│   ├── plan.md
+│   ├── implement.md
+│   ├── refactor.md
+│   ├── verify.md
+│   ├── review.md                # Supports --browser flag
+│   ├── commit.md
+│   └── pr.md
+├── scripts/
+│   └── ralph-init.sh            # Initialize RALPH project
+├── templates/
+│   └── ralph/                   # RALPH project templates
+│       ├── PROMPT.md
+│       └── @fix_plan.md
+├── hooks/                       # Python hooks
+│   ├── smart_context_loader.py
+│   ├── stop.py
+│   └── ...
+├── memory/                      # Memory system templates
+│   ├── CLAUDE.md
+│   ├── decisions.md
+│   ├── conventions.md
+│   └── lessons.md
+├── mcp.json                     # MCP server config
+└── settings.json                # Claude Code settings
+```
 
 ---
 
 ## Hooks System
 
-The plugin includes Python-based hooks that enhance Claude Code functionality.
-
-### Available Hooks
+Python-based hooks for enhanced functionality.
 
 | Hook | Event | Description |
 |------|-------|-------------|
-| `smart_context_loader.py` | UserPromptSubmit | Auto-detects context and suggests skills |
-| `skill-activation-prompt.py` | UserPromptSubmit | Triggers skills based on keywords |
-| `user_prompt_submit.py` | UserPromptSubmit | Logs prompts, optional validation |
-| `pre_tool_use.py` | PreToolUse | Logs tool usage before execution |
-| `post_tool_use.py` | PostToolUse | Logs tool usage after execution |
-| `stop.py` | Stop | Session summary generation |
-| `subagent_stop.py` | SubagentStop | Subagent session logging |
-| `notification.py` | Notification | Notification logging |
-| `pre_compact.py` | PreCompact | Context compaction logging |
+| `smart_context_loader.py` | UserPromptSubmit | Auto-detects context, suggests skills |
+| `stop.py` | Stop | Generates session summary |
+| `user_prompt_submit.py` | UserPromptSubmit | Logs prompts |
+| `pre_tool_use.py` | PreToolUse | Logs tool usage |
+| `post_tool_use.py` | PostToolUse | Logs tool results |
 
 ### Smart Context Loader
 
-**How it works:** When you submit a prompt, the hook scans for keywords and regex patterns (e.g., "form", "validation", "create.*component"). Based on matches, it outputs a context panel suggesting which skills to load and provides relevant notes for your task.
+Detects keywords in your prompt and suggests relevant context:
 
-**Example output:**
 ```
 ──────────────────────────────────────────────────
 📋 SMART CONTEXT DETECTED
@@ -148,274 +413,166 @@ The plugin includes Python-based hooks that enhance Claude Code functionality.
    → zod-validation
 
 📝 Context Notes:
-   ❗ [FORMS] Form handling - consider validation, error states, and accessibility
+   ❗ [FORMS] Consider validation, error states, accessibility
 
 ──────────────────────────────────────────────────
 ```
 
-| Detected Context | Suggested Skills |
-|-----------------|------------------|
-| Forms, validation | `react-forms`, `zod-validation` |
-| API, data fetching | `tanstack-query` |
-| Styling, UI | `tailwind-patterns`, `frontend-design` |
-| Components | `react-guidelines`, `typescript-standards` |
-| Performance | `react-performance` |
-| TypeScript | `typescript-standards` |
-| Testing | Testing context notes |
-| Refactoring | `react-guidelines`, `typescript-standards` |
+---
 
-### Session Summaries
+## MCP Integrations
 
-**How it works:** When a session ends (Stop hook), the transcript is parsed to extract key information. The hook analyzes all messages to identify user prompts, tool calls, file operations, and errors, then generates a summary for review and continuity.
+Pre-configured MCP servers in `mcp.json`:
 
-**Generated files:**
-- `logs/{session_id}/session_summary.txt` - Human-readable summary
-- `logs/{session_id}/session_summary.json` - Structured data for programmatic access
-
-**Example output:**
-```
-============================================================
-SESSION SUMMARY
-============================================================
-Generated: 2025-01-16 15:30:45
-
-## What Was Requested
-  1. Implement hooks from Shiplex.Web.Frontend
-  2. Add memory system and MCP configs
-  3. Update README documentation
-
-## Files Modified
-  ✏️  hooks/stop.py
-  ✏️  settings.json
-  ✏️  README.md
-
-## Tools Used
-  Read, Write, Edit, Bash, Glob, Grep
-
-## Statistics
-  • Total messages: 47
-  • Files modified: 15
-  • Files read: 23
-  • Commands run: 8
-============================================================
-```
+| Server | Purpose |
+|--------|---------|
+| `sequential-thinking` | Enhanced reasoning |
+| `playwright` | Browser automation |
+| `filesystem` | File operations |
+| `memory` | Persistent storage |
+| `fetch` | HTTP requests |
+| `git` | Git operations |
 
 ---
 
 ## Memory System
 
-**How it works:** Claude Code automatically reads `CLAUDE.md` from your project root at session start. This file contains project context that persists across sessions - your tech stack, conventions, active decisions, and things to avoid. The supporting files (`decisions.md`, `conventions.md`, `lessons.md`) help you build institutional knowledge over time.
+Persistent context across sessions.
 
-**Why it matters:** Without persistent context, each session starts fresh. The memory system ensures Claude understands your project's patterns, past decisions, and lessons learned - leading to more consistent, project-aware assistance.
-
-### Directory Structure
-
-```
-memory/
-├── CLAUDE.md       # Main context file - auto-loaded by Claude Code
-├── decisions.md    # Architecture Decision Records (ADRs)
-├── conventions.md  # Discovered code patterns
-├── lessons.md      # What worked/didn't, insights
-└── README.md       # Memory system documentation
-```
-
-### File Purposes
-
-| File | Purpose | Update Frequency |
-|------|---------|------------------|
-| `CLAUDE.md` | Project overview, tech stack, conventions, "do nots" | When setup changes |
-| `decisions.md` | Log architectural decisions with rationale | When making decisions |
-| `conventions.md` | Document discovered patterns in codebase | When patterns emerge |
-| `lessons.md` | Track what worked, what didn't, debugging tips | After completing work |
-
-### Usage
-
-1. Copy `memory/CLAUDE.md` to your project root (Claude auto-reads it)
-2. Fill in your project's tech stack and conventions
-3. Add "Do NOT" rules for things Claude should avoid
-4. Update `decisions.md` when making architectural choices
-5. Log patterns in `conventions.md` as they're established
-6. Record insights in `lessons.md` after completing work
+| File | Purpose |
+|------|---------|
+| `CLAUDE.md` | Project overview, conventions (auto-loaded) |
+| `decisions.md` | Architecture Decision Records |
+| `conventions.md` | Discovered code patterns |
+| `lessons.md` | What worked, what didn't |
 
 ---
 
-## MCP Server Integrations
+## Installation
 
-Pre-configured MCP servers for enhanced capabilities.
+### 1. Clone the plugin
 
-### Included Servers
-
-| Server | Purpose |
-|--------|---------|
-| `sequential-thinking` | Enhanced reasoning for complex problems |
-| `playwright` | Browser automation and testing |
-| `filesystem` | Enhanced file operations |
-| `memory` | Persistent key-value storage |
-| `fetch` | HTTP requests for API testing |
-| `git` | Enhanced git operations |
-
-### Configuration
-
-Copy `mcp.json` to your project's `.claude/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "sequential-thinking": {
-      "command": "npx",
-      "args": ["-y", "@anthropics/mcp-server-sequential-thinking"]
-    },
-    "playwright": {
-      "command": "npx",
-      "args": ["-y", "@anthropics/mcp-server-playwright"]
-    }
-  }
-}
+```bash
+git clone <repo> ~/.claude/plugins/adx-toolkit
 ```
 
-See `mcp.example.json` for all available servers and configurations.
+### 2. Copy CLAUDE.md to your project
 
----
-
-## Skills
-
-### Core Skills (Always Available)
-
-| Skill | Description |
-|-------|-------------|
-| `react-guidelines` | React best practices and patterns |
-| `typescript-standards` | TypeScript conventions |
-| `tailwind-patterns` | Tailwind CSS patterns |
-
-### Optional Skills
-
-| Skill | Description |
-|-------|-------------|
-| `tanstack-query` | Data fetching with TanStack Query |
-| `zod-validation` | Schema validation with Zod |
-| `react-forms` | Form handling patterns |
-| `react-performance` | Performance optimization |
-| `frontend-design` | UI/UX design patterns |
-
----
-
-## Agents
-
-Specialized agents for different development tasks:
-
-| Agent | Purpose |
-|-------|---------|
-| `code-reviewer` | Reviews code and adds [CR] comments |
-| `frontend-architect` | Designs component architecture |
-| `react-developer` | Implements React features |
-| `typescript-expert` | Resolves type issues |
-| `ui-stylist` | Styling and design implementation |
-| `explorer` | Codebase exploration and analysis |
-| `web-research-specialist` | Web research and documentation lookup |
-
----
-
-## Directory Structure
-
+```bash
+cp ~/.claude/plugins/adx-toolkit/CLAUDE.md /your-project/CLAUDE.md
 ```
-frontend-dev-toolkit/
-├── .claude-plugin/
-│   └── plugin.json              # Plugin metadata
-├── agents/                      # Specialized agents
-│   ├── code-reviewer.md
-│   ├── frontend-architect.md
-│   ├── react-developer.md
-│   ├── typescript-expert.md
-│   ├── ui-stylist.md
-│   ├── explorer.md
-│   └── web-research-specialist.md
-├── commands/                    # Slash commands
-│   ├── setup.md
-│   ├── dev/                     # Development commands
-│   ├── verify/                  # Verification commands
-│   ├── review/                  # Code review commands
-│   └── utils/                   # Utility commands
-├── hooks/                       # Python hooks
-│   ├── smart_context_loader.py
-│   ├── skill-activation-prompt.py
-│   ├── user_prompt_submit.py
-│   ├── stop.py
-│   ├── ...
-│   └── utils/                   # Hook utilities
-├── memory/                      # Memory system templates
-│   ├── CLAUDE.md
-│   ├── decisions.md
-│   ├── conventions.md
-│   └── lessons.md
-├── skills/                      # Skill definitions
-│   ├── core/
-│   └── optional/
-├── mcp.json                     # MCP server config
-├── mcp.example.json             # Extended MCP examples
-├── settings.json                # Default settings with hooks
-└── README.md
+
+### 3. (Optional) Copy hooks and settings
+
+```bash
+cp -r ~/.claude/plugins/adx-toolkit/hooks /your-project/.claude/hooks
+cp ~/.claude/plugins/adx-toolkit/settings.json /your-project/.claude/settings.json
+cp ~/.claude/plugins/adx-toolkit/mcp.json /your-project/.claude/mcp.json
+```
+
+### 4. Customize CLAUDE.md for your project
+
+Edit the tech stack, conventions, and anti-patterns.
+
+---
+
+## Usage Examples
+
+### Ship a feature (fully autonomous)
+
+```bash
+/ship add user profile page with avatar upload
+```
+
+### Ship with browser verification (recommended for UI)
+
+```bash
+/ship add dashboard with charts --browser
+```
+
+### Plan first, then implement (controlled)
+
+```bash
+/plan add shopping cart functionality
+# Review the plan at .claude/plans/plan-shopping-cart.md
+# Make adjustments if needed
+
+/implement .claude/plans/plan-shopping-cart.md
+/refactor
+/verify
+/review --browser  # With visual verification
+/commit
+/pr
+```
+
+### Quick refactor
+
+```bash
+/refactor src/features/users/
+```
+
+### Code review only
+
+```bash
+/review
+# Check report at .claude/reviews/review-{date}.md
+```
+
+### Browser verification only
+
+```bash
+/review --browser-only
+# Claude uses Chrome extension to view UI, verifies it, fixes issues if found
+```
+
+### RALPH: Fire and forget (overnight development)
+
+```bash
+# Initialize RALPH project
+./scripts/ralph-init.sh "add user authentication with JWT" --browser
+
+# Start autonomous loop (go to sleep)
+cd .ralph-projects/add-user-authentication
+ralph --monitor --timeout 120
+
+# Wake up to completed PR
+```
+
+### RALPH: Using the command
+
+```bash
+# Start RALPH with monitoring dashboard
+/ralph "implement payment integration" --browser --monitor
+
+# RALPH will loop until PR is created or circuit breaker trips
 ```
 
 ---
 
 ## Configuration
 
-### settings.json
-
-The plugin includes a pre-configured `settings.json` with all hooks enabled:
-
-```json
-{
-  "permissions": {
-    "allow": ["Edit:*", "Write:*", "Bash:*"],
-    "defaultMode": "acceptEdits"
-  },
-  "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": ["sequential-thinking", "playwright"],
-  "hooks": {
-    "UserPromptSubmit": [...],
-    "Stop": [...],
-    ...
-  }
-}
-```
-
 ### Environment Variables
 
 | Variable | Description |
 |----------|-------------|
-| `CLAUDE_HOOKS_LOG_DIR` | Base directory for logs (default: `logs`) |
-| `CLAUDE_PROJECT_DIR` | Project directory for skill rules |
-| `ANTHROPIC_API_KEY` | For LLM-powered hook features |
-| `OPENAI_API_KEY` | Alternative LLM provider |
-| `ENGINEER_NAME` | For personalized messages |
+| `CLAUDE_HOOKS_LOG_DIR` | Log directory (default: `logs`) |
+| `CLAUDE_PROJECT_DIR` | Project directory |
+
+### settings.json
+
+```json
+{
+  "permissions": {
+    "allow": ["Edit:*", "Write:*", "Bash:*"]
+  },
+  "hooks": {
+    "UserPromptSubmit": ["python hooks/smart_context_loader.py"],
+    "Stop": ["python hooks/stop.py"]
+  }
+}
+```
 
 ---
-
-## Tech Stack Support
-
-### Core (Always Enabled)
-- React 19+
-- TypeScript
-- Tailwind CSS
-
-### Optional (Configure During Setup)
-- TanStack Query
-- React Router / TanStack Router
-- Zod
-- Zustand
-- React Hook Form
-- AG Grid
-- shadcn/ui
-
----
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch
-3. Make your changes
-4. Submit a pull request
 
 ## License
 

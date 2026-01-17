@@ -1,8 +1,23 @@
 {
-  "name": "frontend-dev-toolkit",
-  "description": "A comprehensive development workflow plugin for React/TypeScript frontend applications. Includes planning, implementation, verification, code review, hooks system, smart context loading, session management, and MCP integrations.",
+  "name": "adx-toolkit",
+  "version": "2.0.0",
+  "description": "Autonomous agentic workflow plugin for React/TypeScript frontend development. Features /ship for single-pass automation, /ralph for fully autonomous loops, browser verification with Chrome extension, 9 specialized agents, and comprehensive code review.",
   "author": {
     "name": "Adrian Oleskiewicz",
     "email": "adxablee@gmail.com"
+  },
+  "keywords": [
+    "react",
+    "typescript",
+    "frontend",
+    "agentic",
+    "workflow",
+    "autonomous",
+    "code-review",
+    "browser-testing"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adxable/adx-toolkit.git"
   }
 }

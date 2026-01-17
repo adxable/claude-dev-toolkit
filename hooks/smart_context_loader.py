@@ -23,6 +23,7 @@ from utils.constants import ensure_session_log_dir
 
 # Context detection rules
 # Each rule has: keywords, patterns, and associated skills/context
+# Skills reference: frontend-design, webapp-testing, tdd, browser-testing
 CONTEXT_RULES: List[Dict[str, Any]] = [
     {
         "name": "forms",
@@ -34,8 +35,8 @@ CONTEXT_RULES: List[Dict[str, Any]] = [
             r"validate.*input",
             r"handle.*submit",
         ],
-        "skills": ["react-forms", "zod-validation"],
-        "context": "Form handling - consider validation, error states, and accessibility",
+        "skills": [],
+        "context": "Form handling - use React Hook Form + Zod, consider error states and accessibility",
         "priority": "high"
     },
     {
@@ -48,8 +49,8 @@ CONTEXT_RULES: List[Dict[str, Any]] = [
             r"use.*query",
             r"mutation",
         ],
-        "skills": ["tanstack-query"],
-        "context": "Data fetching - consider loading states, error handling, and caching",
+        "skills": [],
+        "context": "Data fetching - use TanStack Query with useSuspenseQuery, consider loading/error states",
         "priority": "high"
     },
     {
@@ -62,8 +63,8 @@ CONTEXT_RULES: List[Dict[str, Any]] = [
             r"update.*design",
             r"tailwind",
         ],
-        "skills": ["tailwind-patterns", "frontend-design"],
-        "context": "Styling work - follow design system, ensure responsiveness",
+        "skills": ["frontend-design"],
+        "context": "Styling work - use Tailwind + shadcn/ui, follow design system, ensure responsiveness",
         "priority": "medium"
     },
     {
@@ -75,7 +76,7 @@ CONTEXT_RULES: List[Dict[str, Any]] = [
             r"build.*modal",
             r"implement.*dialog",
         ],
-        "skills": ["react-guidelines", "typescript-standards"],
+        "skills": ["frontend-design"],
         "context": "Component creation - consider reusability, props interface, and composition",
         "priority": "high"
     },
@@ -88,8 +89,8 @@ CONTEXT_RULES: List[Dict[str, Any]] = [
             r"reduce.*render",
             r"code.*split",
         ],
-        "skills": ["react-performance"],
-        "context": "Performance optimization - profile first, then optimize",
+        "skills": [],
+        "context": "Performance optimization - use performance-auditor agent, profile first then optimize",
         "priority": "high"
     },
     {
@@ -101,8 +102,8 @@ CONTEXT_RULES: List[Dict[str, Any]] = [
             r"type.*error",
             r"generic.*",
         ],
-        "skills": ["typescript-standards"],
-        "context": "TypeScript work - ensure strict typing, avoid 'any'",
+        "skills": [],
+        "context": "TypeScript work - ensure strict typing, avoid 'any', see CLAUDE.md conventions",
         "priority": "medium"
     },
     {
@@ -114,8 +115,21 @@ CONTEXT_RULES: List[Dict[str, Any]] = [
             r"test.*component",
             r"e2e.*test",
         ],
-        "skills": [],
-        "context": "Testing - follow AAA pattern, test behavior not implementation",
+        "skills": ["webapp-testing", "tdd"],
+        "context": "Testing - follow TDD workflow, use Playwright for e2e, test behavior not implementation",
+        "priority": "medium"
+    },
+    {
+        "name": "browser",
+        "keywords": ["browser", "visual", "ui test", "screenshot", "chrome", "verify ui"],
+        "patterns": [
+            r"verify.*ui",
+            r"check.*browser",
+            r"visual.*test",
+            r"test.*ui",
+        ],
+        "skills": ["browser-testing"],
+        "context": "Browser verification - use /review --browser for visual testing with Chrome extension",
         "priority": "medium"
     },
     {
@@ -127,8 +141,8 @@ CONTEXT_RULES: List[Dict[str, Any]] = [
             r"simplify.*",
             r"extract.*",
         ],
-        "skills": ["react-guidelines", "typescript-standards"],
-        "context": "Refactoring - ensure tests pass before and after, small incremental changes",
+        "skills": [],
+        "context": "Refactoring - use /refactor command, ensure tests pass before and after",
         "priority": "medium"
     },
     {
@@ -140,8 +154,8 @@ CONTEXT_RULES: List[Dict[str, Any]] = [
             r"add.*store",
             r"state.*management",
         ],
-        "skills": ["react-guidelines"],
-        "context": "State management - prefer local state, lift only when needed",
+        "skills": [],
+        "context": "State management - use Zustand with useShallow for UI state, TanStack Query for server state",
         "priority": "medium"
     },
     {
@@ -153,8 +167,8 @@ CONTEXT_RULES: List[Dict[str, Any]] = [
             r"navigation.*",
             r"redirect.*",
         ],
-        "skills": ["react-guidelines"],
-        "context": "Routing - consider URL structure, loading states, and error boundaries",
+        "skills": [],
+        "context": "Routing - use TanStack Router or React Router v7, consider loading states and error boundaries",
         "priority": "low"
     },
 ]
