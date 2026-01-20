@@ -1,0 +1,34 @@
+{
+  "projectType": "product",
+  "teamSize": "small",
+  "strictness": "strict",
+  "abstractionRule": "rule-of-three",
+  "principles": {
+    "singleResponsibility": true,
+    "openClosed": false,
+    "liskovSubstitution": false,
+    "interfaceSegregation": false,
+    "dependencyInversion": true,
+    "noGodClasses": true,
+    "noPrematureAbstraction": true
+  },
+  "tooling": {
+    "eslint": {
+      "required": true,
+      "suggestedRules": {
+        "max-lines": ["warn", { "max": 300, "skipBlankLines": true }],
+        "max-lines-per-function": ["warn", { "max": 50 }],
+        "complexity": ["warn", 10],
+        "@typescript-eslint/no-explicit-any": "error"
+      }
+    },
+    "typescript": {
+      "required": true,
+      "suggestedOptions": {
+        "strict": true,
+        "noImplicitAny": true,
+        "strictNullChecks": true
+      }
+    }
+  }
+}

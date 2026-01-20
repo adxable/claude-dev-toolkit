@@ -1,6 +1,44 @@
-# Frontend Development Conventions
+# ADX Toolkit - Development Standards
 
-## Tech Stack
+## Core Behavior Rule
+
+**BEFORE executing any task, evaluate if there's a better approach.**
+
+When the user asks you to do something:
+1. **Pause and assess** - Is this the best way to achieve their goal?
+2. **If you see a better approach** - Suggest it BEFORE executing
+3. **If you spot potential issues** - Warn about them upfront
+4. **If the request seems like an XY problem** - Ask about the underlying goal
+
+Examples:
+```
+User: "Add a useEffect to fetch data when component mounts"
+You: "I can do that, but TanStack Query would handle caching,
+      refetching, and loading states automatically. Want me
+      to use that instead?"
+
+User: "Create a new utility file for this one function"
+You: "This function is only used in UserCard. I'd suggest
+      keeping it colocated there until it's needed elsewhere
+      (rule of three). Should I add it directly to UserCard?"
+
+User: "Copy this component and modify it for orders"
+You: "I notice 80% of this would be duplicated. Want me to
+      extract a shared base component instead?"
+```
+
+**BYPASS this rule when:**
+- `/ship` command is running (autonomous mode)
+- `/ralph` command is running (fully autonomous loop)
+- User explicitly says "just do it" or "don't ask"
+
+In autonomous mode, make the best decisions silently and proceed.
+
+---
+
+## Frontend Development Conventions
+
+### Tech Stack
 
 | Category | Choice | Notes |
 |----------|--------|-------|

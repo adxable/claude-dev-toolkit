@@ -59,8 +59,6 @@ Format:
 <type>: <short description>
 
 <body - what and why>
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 Types:
@@ -80,8 +78,6 @@ feat: add user authentication
 
 Implement JWT-based auth with refresh tokens.
 Add login/logout endpoints and auth middleware.
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 )"
 ```
@@ -126,7 +122,6 @@ refactor/improve-auth-flow
 
 - Never force push to main/master
 - Never skip hooks (--no-verify)
-- Always include Co-Authored-By
 - Use conventional commit format
 - Keep commits atomic and focused
 - Always print terminal output on start and complete

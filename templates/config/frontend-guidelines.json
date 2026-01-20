@@ -1,0 +1,48 @@
+{
+  "detected": {
+    "state": null,
+    "serverState": null,
+    "forms": null,
+    "styling": null,
+    "ui": null,
+    "framework": null
+  },
+  "strictness": "strict",
+  "stackRules": {
+    "zustand": {
+      "enabled": false,
+      "rules": [
+        "Always use useShallow for object/array selectors",
+        "Single primitive selectors don't need useShallow"
+      ]
+    },
+    "tanstack-query": {
+      "enabled": false,
+      "rules": [
+        "Use queryOptions() factory pattern",
+        "Prefer useSuspenseQuery with Suspense boundaries",
+        "Query keys: ['entity', 'action', params]"
+      ]
+    },
+    "react-hook-form": {
+      "enabled": false,
+      "rules": [
+        "Always use zodResolver for validation",
+        "Infer types from schema with z.infer<typeof schema>"
+      ]
+    },
+    "tailwind": {
+      "enabled": false,
+      "rules": [
+        "Use cn() helper for conditional classes",
+        "Use cva for component variants if class-variance-authority installed"
+      ]
+    }
+  },
+  "universalRules": {
+    "keys": "Stable unique IDs only, never index",
+    "memoization": "useMemo for calculations, useCallback for handlers passed to memo children",
+    "exports": "Named exports preferred, avoid default exports",
+    "errorBoundaries": "Required at layout level"
+  }
+}

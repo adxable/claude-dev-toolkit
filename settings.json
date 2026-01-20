@@ -17,11 +17,23 @@
         "hooks": [
           {
             "type": "command",
+            "command": "uv run hooks/dev_standards_loader.py || true"
+          },
+          {
+            "type": "command",
+            "command": "uv run hooks/context_loader.py || true"
+          },
+          {
+            "type": "command",
             "command": "uv run hooks/smart_context_loader.py || true"
           },
           {
             "type": "command",
             "command": "uv run hooks/skill-activation-prompt.py || true"
+          },
+          {
+            "type": "command",
+            "command": "uv run hooks/circuit_breaker.py || true"
           },
           {
             "type": "command",
@@ -67,6 +79,18 @@
       {
         "matcher": "",
         "hooks": [
+          {
+            "type": "command",
+            "command": "uv run hooks/context_updater.py || true"
+          },
+          {
+            "type": "command",
+            "command": "uv run hooks/cost_tracker.py || true"
+          },
+          {
+            "type": "command",
+            "command": "uv run hooks/memory_updater.py || true"
+          },
           {
             "type": "command",
             "command": "uv run hooks/stop.py --chat --summary || true"

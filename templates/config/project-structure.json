@@ -1,0 +1,43 @@
+{
+  "detected": {
+    "framework": null,
+    "organization": null,
+    "naming": null
+  },
+  "enforced": {
+    "organization": "feature-based",
+    "naming": "pascalcase-components",
+    "colocation": true,
+    "barrelExports": "feature-level"
+  },
+  "paths": {
+    "features": "src/features",
+    "shared": "src/components",
+    "hooks": "src/hooks",
+    "lib": "src/lib",
+    "types": "src/types"
+  },
+  "boundaries": {
+    "noFeatureCrossImports": true,
+    "maxRelativeDepth": 2,
+    "requireAliases": true
+  },
+  "frameworkOverrides": {
+    "nextjs-app": {
+      "paths": {
+        "routes": "app"
+      },
+      "rules": [
+        "Keep app/ for routing only",
+        "Business logic in src/features/",
+        "Server Components default, mark 'use client' explicitly"
+      ]
+    },
+    "remix": {
+      "paths": {
+        "routes": "app/routes",
+        "shared": "app/components"
+      }
+    }
+  }
+}
