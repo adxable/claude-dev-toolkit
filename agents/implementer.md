@@ -145,6 +145,23 @@ Use `explorer` agent (haiku) for fast searches:
 [implementer] Using as reference
 ```
 
+### Library Documentation (Context7)
+
+Use Context7 MCP for up-to-date library docs:
+
+```
+[implementer] Looking up TanStack Query docs...
+1. mcp__context7__resolve-library-id("@tanstack/react-query")
+2. mcp__context7__get-library-docs(libraryId, topic: "useSuspenseQuery")
+[implementer] Found current API, applying...
+```
+
+**When to use Context7:**
+- Implementing features with external libraries
+- Unsure about current API syntax
+- Need examples for specific library features
+- Library version may have changed since training
+
 ### External Research
 
 Use `web-researcher` agent if needed:

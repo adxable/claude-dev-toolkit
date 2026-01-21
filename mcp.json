@@ -36,6 +36,11 @@
       "command": "npx",
       "args": ["-y", "@anthropics/mcp-server-git"],
       "description": "Enhanced git operations"
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"],
+      "description": "Up-to-date documentation for libraries. Use resolve-library-id to find a library, then get-library-docs to fetch docs."
     }
   }
 }

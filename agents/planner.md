@@ -63,6 +63,23 @@ Analyze the task description for these indicators:
 
 ## Research Process
 
+### 0. Library Documentation (Context7)
+
+When the task involves external libraries, use Context7 MCP first:
+
+```
+[planner] Looking up TanStack Table docs for plan...
+1. mcp__context7__resolve-library-id("@tanstack/react-table")
+2. mcp__context7__get-library-docs(libraryId, topic: "column definitions")
+[planner] Found current API patterns
+```
+
+**Use Context7 when planning involves:**
+- New library integrations
+- Unfamiliar library APIs
+- Need to verify current syntax/options
+- Library-specific patterns for the plan
+
 ### 1. Find Similar Patterns
 
 ```bash

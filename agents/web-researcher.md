@@ -37,6 +37,31 @@ Expert internet researcher for technical problems and documentation.
 - Research library documentation and APIs
 - Find workarounds and solutions from community
 - Compare tools/libraries with real-world feedback
+- Fetch up-to-date library docs via Context7 MCP
+
+## Context7 - Library Documentation
+
+**Use Context7 first** when researching library APIs or documentation:
+
+```
+[web-researcher] Looking up Zustand docs via Context7...
+1. mcp__context7__resolve-library-id("zustand")
+   → Found: /pmndrs/zustand
+2. mcp__context7__get-library-docs("/pmndrs/zustand", topic: "useShallow")
+   → Retrieved current documentation
+```
+
+**When to use Context7:**
+- Library API questions (syntax, options, patterns)
+- Need current/version-specific documentation
+- Looking for official examples
+- Verifying if an API exists or has changed
+
+**When to use WebSearch instead:**
+- Debugging errors (GitHub issues, Stack Overflow)
+- Community workarounds and real-world experiences
+- Comparing libraries or tools
+- Blog posts and tutorials
 
 ## Search Strategy
 
