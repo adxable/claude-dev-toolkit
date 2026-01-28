@@ -25,6 +25,10 @@
           },
           {
             "type": "command",
+            "command": "uv run hooks/state_loader.py || true"
+          },
+          {
+            "type": "command",
             "command": "uv run hooks/smart_context_loader.py || true"
           },
           {
@@ -90,6 +94,10 @@
           {
             "type": "command",
             "command": "uv run hooks/memory_updater.py || true"
+          },
+          {
+            "type": "command",
+            "command": "uv run hooks/state_updater.py || true"
           },
           {
             "type": "command",

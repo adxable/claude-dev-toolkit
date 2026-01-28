@@ -24,6 +24,7 @@ STATE_MANAGER="zustand"
 INSTALL_HOOKS="yes"
 INSTALL_MCP="no"
 INSTALL_MEMORY="yes"
+INSTALL_STATE="no"
 SELECTED_AGENTS=()
 
 # Print banner
@@ -241,6 +242,12 @@ ask_features() {
     echo -e "${CYAN}Memory System${NC} - Persistent context (decisions, conventions, lessons)"
     INSTALL_MEMORY=$(ask_yes_no "  Install memory system?" "yes")
     [ "$INSTALL_MEMORY" = "yes" ] && success "Memory: enabled" || info "Memory: disabled"
+    echo ""
+
+    # State Tracking
+    echo -e "${CYAN}State Tracking${NC} - Progress tracking with phases, roadmap, and session handoffs"
+    INSTALL_STATE=$(ask_yes_no "  Install state tracking?" "no")
+    [ "$INSTALL_STATE" = "yes" ] && success "State: enabled" || info "State: disabled"
 }
 
 # Step 4: Agents
@@ -300,6 +307,7 @@ confirm_setup() {
     echo "  Hooks:       $INSTALL_HOOKS"
     echo "  MCP:         $INSTALL_MCP"
     echo "  Memory:      $INSTALL_MEMORY"
+    echo "  State:       $INSTALL_STATE"
     echo "  Agents:      ${SELECTED_AGENTS[*]}"
     echo ""
 
@@ -584,6 +592,14 @@ install_files() {
     mkdir -p "$PROJECT_DIR/.claude/plans"
     mkdir -p "$PROJECT_DIR/.claude/reviews"
     success "Created plans and reviews directories"
+
+    # Install state tracking
+    if [ "$INSTALL_STATE" = "yes" ]; then
+        mkdir -p "$PROJECT_DIR/.claude/state"
+        cp -r "$SCRIPT_DIR/state/"* "$PROJECT_DIR/.claude/state/" 2>/dev/null || true
+        success "Installed state tracking templates"
+        info "  Run /adx:init-state to configure your project"
+    fi
 }
 
 # Print completion message
@@ -598,6 +614,7 @@ print_completion() {
     [ "$INSTALL_HOOKS" = "yes" ] && echo "  $PROJECT_DIR/.claude/hooks/"
     [ "$INSTALL_MCP" = "yes" ] && echo "  $PROJECT_DIR/.claude/mcp.json"
     [ "$INSTALL_MEMORY" = "yes" ] && echo "  $PROJECT_DIR/.claude/memory/"
+    [ "$INSTALL_STATE" = "yes" ] && echo "  $PROJECT_DIR/.claude/state/"
     echo ""
     echo -e "${BOLD}Next steps:${NC}"
     echo ""

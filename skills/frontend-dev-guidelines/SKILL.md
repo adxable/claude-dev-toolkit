@@ -343,25 +343,80 @@ export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
 These apply regardless of stack:
 
-### 1. Memoization
+### 1. Memoization (Performance-First)
+
+**CRITICAL: Performance > preventing re-renders. Memoization has a cost.**
+
+#### When to Use `memo()`
 
 ```typescript
-// useMemo: Expensive calculations
-const sorted = useMemo(
-  () => items.sort((a, b) => a.name.localeCompare(b.name)),
-  [items]
-);
+// ✅ CORRECT - list item (50+ items) with expensive render (>1ms)
+export const ExpensiveListItem = memo(function ExpensiveListItem({ item }: Props) {
+  // Complex calculations or many DOM nodes
+  return <div>{/* expensive render */}</div>;
+});
 
-// useCallback: Functions passed to memoized children
-const handleClick = useCallback((id: string) => {
-  setSelected(id);
-}, []);
+// ❌ WRONG - simple component, cheap render
+const SimpleLabel = memo(function SimpleLabel() {
+  return <span>{t('label')}</span>;  // ~0.05ms render, memo overhead not worth it
+});
 
-// React.memo: List item components
-export const ListItem = memo(function ListItem({ item }: Props) {
-  return <div>{item.name}</div>;
+// ❌ WRONG - object props change every render (memo NEVER bails out)
+const Panel = memo(function Panel({
+  criteria,  // New object reference each render
+  data       // New array reference from query
+}: Props) {
+  // Useless - memo will never skip render
 });
 ```
+
+#### When to Use `useMemo()`
+
+```typescript
+// ✅ CORRECT - expensive filtering (1000+ items, >1ms)
+const filtered = useMemo(
+  () => items.filter(x => complexCondition(x)),
+  [items, filter]
+);
+
+// ❌ WRONG - cheap operation (<1ms)
+const selected = useMemo(
+  () => items.find(x => x.id === id),  // find() is ~0.01ms
+  [items, id]
+);
+// Just write directly:
+const selected = items.find(x => x.id === id);
+```
+
+#### When to Use `useCallback()`
+
+```typescript
+// ✅ CORRECT - passed to memo child that actually bails out
+const handleSelect = useCallback((id: string) => {
+  setSelected(id);
+}, []);
+<MemoizedList onSelect={handleSelect} items={stableItems} />
+
+// ❌ WRONG - passed to DOM element (DOM doesn't check ref equality)
+const handleClick = useCallback(() => doSomething(), []);
+<button onClick={handleClick}>Click</button>
+
+// ❌ WRONG - passed to non-memoized component (shadcn, radix)
+const handleChange = useCallback(() => setValue(x), []);
+<CommandItem onSelect={handleChange} />  // NOT memoized
+```
+
+#### Quick Reference
+
+| Scenario | memo | useMemo | useCallback |
+|----------|------|---------|-------------|
+| List item (50+ items, >1ms render) | ✅ | - | - |
+| Simple component (<0.5ms render) | ❌ | - | - |
+| Array operation (<500 items) | - | ❌ | - |
+| Array operation (1000+ items) | - | ✅ | - |
+| Callback → DOM element | - | - | ❌ |
+| Callback → working memo child | - | - | ✅ |
+| Callback → non-memo component | - | - | ❌ |
 
 ### 2. Keys
 
@@ -479,9 +534,14 @@ export default UserCard;
 │                                                             │
 │  ALWAYS:                                                    │
 │  □ Stable keys in lists (never index)                       │
-│  □ React.memo for list item components                      │
 │  □ Named exports (no default)                               │
 │  □ Error boundary at app/layout level                       │
+│                                                             │
+│  MEMOIZATION (performance-first):                           │
+│  □ NO memo() on simple/propless components                  │
+│  □ NO useMemo() for cheap operations (<1ms)                 │
+│  □ NO useCallback() for DOM element handlers                │
+│  □ memo() ONLY for 50+ list items with >1ms render          │
 └─────────────────────────────────────────────────────────────┘
 ```
 

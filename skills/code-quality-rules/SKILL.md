@@ -254,6 +254,46 @@ module.exports = {
 
 ---
 
+## React Memoization (Performance-First)
+
+**CRITICAL: Performance > preventing re-renders. Memoization has a cost.**
+
+This is a design decision linters can't catch. Apply judgment.
+
+### When Memoization Helps
+
+| Pattern | Use ONLY When |
+|---------|---------------|
+| `memo()` | 50+ list items AND render >1ms AND props are stable |
+| `useMemo()` | Computation >1ms (1000+ items filter/sort) |
+| `useCallback()` | Passed to working `memo()` child with stable other props |
+
+### When Memoization Hurts (Remove It)
+
+| Anti-Pattern | Why It's Bad |
+|--------------|--------------|
+| `memo()` on propless component | Adds overhead, no props to compare |
+| `memo()` with object props | Props are new refs each render, never bails out |
+| `useMemo()` for Array.find | find() is ~0.01ms, memo overhead exceeds savings |
+| `useCallback()` → DOM element | `<button onClick>` never checks ref equality |
+| `useCallback()` → shadcn/radix | These components are NOT memoized |
+
+### Detection Pattern
+
+```
+[quality] Checking for memoization anti-patterns...
+[quality] ⚠ VesselLibraryLanding.tsx:
+  - memo() on component with no props (remove wrapper)
+[quality] ⚠ VesselSearchCombobox.tsx:
+  - useMemo() for items.find() - operation is <1ms (remove useMemo)
+  - useCallback() passed to DOM <span> - never helps (remove useCallback)
+[quality] ⚠ AbstractComponentsPanel.tsx:
+  - memo() with object props (criteria, data) - will never bail out
+  → Consider: Remove memo or ensure stable prop references
+```
+
+---
+
 ## Review Checklist
 
 When reviewing code, evaluate:
@@ -281,6 +321,12 @@ When reviewing code, evaluate:
 │  □ High-level doesn't import low-level                      │
 │  □ No circular dependencies                                 │
 │  □ External dependencies isolated                           │
+│                                                             │
+│  Memoization (React):                                       │
+│  □ No memo() on simple/propless components                  │
+│  □ No useMemo() for cheap ops (<1ms)                        │
+│  □ No useCallback() for DOM handlers                        │
+│  □ memo() only with stable props that actually change       │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -295,6 +341,7 @@ When reviewing code, evaluate:
 | Shotgun surgery | Each file is fine alone | One change touches many files |
 | Feature envy | No syntax violation | Method uses another class's data more than its own |
 | Primitive obsession | Types are correct | Stringly-typed or numeric magic values |
+| Over-memoization | Syntactically correct | memo/useMemo/useCallback with no performance benefit |
 
 ---
 
