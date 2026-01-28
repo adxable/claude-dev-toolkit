@@ -1,8 +1,8 @@
 # Ship
 
-Fully autonomous workflow: plan → implement → refactor → verify → review → commit → pr.
+Fully autonomous workflow: plan → implement → verify → review → commit → pr.
 
-**CRITICAL: ALL 7 STEPS ARE MANDATORY. NEVER SKIP ANY STEP.**
+**CRITICAL: ALL 6 STEPS ARE MANDATORY. NEVER SKIP ANY STEP.**
 
 ## Arguments
 
@@ -14,41 +14,66 @@ Fully autonomous workflow: plan → implement → refactor → verify → review
 - `--skip-tests` - Skip test execution in verify step
 - `--continue` - Resume from last checkpoint
 - `--from <phase>` - Start from specific phase
-- `--rollback <phase>` - Rollback to checkpoint state
 - `--status` - Show checkpoint status
+
+## State Tracking Commands
+
+**IMPORTANT: Use these commands to track progress. State survives context compaction.**
+
+```bash
+# Start ship (REQUIRED at beginning)
+uv run hooks/ship_state.py start "feature description"
+
+# Mark phase as complete (REQUIRED after each phase)
+uv run hooks/ship_state.py phase_done <phase>
+
+# Check current status
+uv run hooks/ship_state.py status
+
+# Mark ship as fully complete
+uv run hooks/ship_state.py complete
+
+# Abort if needed
+uv run hooks/ship_state.py abort
+```
 
 ## MANDATORY EXECUTION RULES
 
 **YOU MUST FOLLOW THESE RULES:**
 
-1. **NEVER skip any step** - All 7 steps must execute in order
-2. **ALWAYS output step banner** - Print the step number/name before starting each step
-3. **ALWAYS verify completion** - Confirm each step succeeded before moving to next
-4. **ALWAYS run browser verification** - Unless `--skip-browser` is explicitly passed
-5. **ALWAYS save checkpoints** - After each successful step
+1. **ALWAYS start with ship_state** - Run `ship_state.py start` before anything else
+2. **NEVER skip any step** - All 6 steps must execute in order
+3. **ALWAYS mark phases done** - Run `ship_state.py phase_done <phase>` after each phase
+4. **ALWAYS output step banner** - Print the step number/name before starting each step
+5. **ALWAYS run browser verification** - Unless `--skip-browser` is explicitly passed
 6. **STOP on critical failures** - Don't continue if a step fails critically
 
 ## Instructions
 
 ### Pre-flight Check
 
-Before starting, verify:
+Before starting, initialize state tracking:
 ```bash
 # Check git status
 git status
 
 # Ensure clean working directory or stash
 git stash --include-untracked || true
+
+# CRITICAL: Initialize ship state tracking
+uv run hooks/ship_state.py start "$ARGUMENTS"
 ```
 
-**Output:**
+The ship_state command will output:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🚀 SHIP STARTING
+🚀 SHIP STARTED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ID: {timestamp}
 Feature: {description}
-Browser verification: {enabled/disabled}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Starting with Phase 1: PLAN
 ```
 
 ---
@@ -59,7 +84,7 @@ Browser verification: {enabled/disabled}
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Step 1/7: PLAN
+Step 1/6: PLAN
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -80,10 +105,9 @@ Step 1/7: PLAN
 - [ ] All files identified
 - [ ] Implementation steps defined
 
-**CHECKPOINT: Save after plan completion**
-
-```
-[checkpoint] ✓ Saved after plan
+**CHECKPOINT: Mark phase complete**
+```bash
+uv run hooks/ship_state.py phase_done plan
 ```
 
 ---
@@ -94,7 +118,7 @@ Step 1/7: PLAN
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Step 2/7: IMPLEMENT
+Step 2/6: IMPLEMENT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -115,63 +139,20 @@ Step 2/7: IMPLEMENT
 - [ ] No TODO comments left
 - [ ] Basic functionality in place
 
-**CHECKPOINT: Save after implementation**
-
-```
-[checkpoint] ✓ Saved after implement
+**CHECKPOINT: Mark phase complete**
+```bash
+uv run hooks/ship_state.py phase_done implement
 ```
 
 ---
 
-### Step 3: REFACTOR (MANDATORY)
+### Step 3: VERIFY (MANDATORY)
 
 **YOU MUST EXECUTE THIS STEP. DO NOT SKIP.**
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Step 3/7: REFACTOR
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-
-**Actions:**
-1. Use `refactorer` agent on ALL changed files
-2. Agent will spawn `explorer` to verify patterns
-3. Fix any issues found
-
-**Refactorer checks:**
-- Remove `any` types → proper TypeScript types
-- Remove dead code
-- Simplify over-abstractions
-- Verify naming conventions
-- Check for duplicate utilities
-
-**Output:**
-```
-[refactorer] Analyzing: {file}
-[refactorer] Fixed: {issue}
-[refactorer] ✓ Complete (Files: N, Issues: N)
-```
-
-**Completion check:**
-- [ ] No `any` types in changed files
-- [ ] No dead code
-- [ ] Consistent naming
-
-**CHECKPOINT: Save after refactor**
-
-```
-[checkpoint] ✓ Saved after refactor
-```
-
----
-
-### Step 4: VERIFY (MANDATORY)
-
-**YOU MUST EXECUTE THIS STEP. DO NOT SKIP.**
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Step 4/7: VERIFY
+Step 3/6: VERIFY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -221,21 +202,20 @@ npm test
 - [ ] Build succeeds
 - [ ] Tests pass (if present)
 
-**CHECKPOINT: Save after verify**
-
-```
-[checkpoint] ✓ Saved after verify
+**CHECKPOINT: Mark phase complete**
+```bash
+uv run hooks/ship_state.py phase_done verify
 ```
 
 ---
 
-### Step 5: REVIEW (MANDATORY)
+### Step 4: REVIEW (MANDATORY)
 
 **YOU MUST EXECUTE THIS STEP. DO NOT SKIP.**
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Step 5/7: REVIEW
+Step 4/6: REVIEW
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -291,27 +271,26 @@ Run ALL 4 agents **simultaneously**:
 - [ ] Empty states handled (if applicable)
 
 **Critical issues handling:**
-- If CRITICAL issues found in code review → Loop back to Step 3
+- If CRITICAL issues found in code review → Fix and re-verify
 - If browser issues persist after 5 iterations → Stop and report
 
 **Generate report:**
 Save to `.claude/reviews/review-{date}.md`
 
-**CHECKPOINT: Save after review**
-
-```
-[checkpoint] ✓ Saved after review
+**CHECKPOINT: Mark phase complete**
+```bash
+uv run hooks/ship_state.py phase_done review
 ```
 
 ---
 
-### Step 6: COMMIT (MANDATORY)
+### Step 5: COMMIT (MANDATORY)
 
 **YOU MUST EXECUTE THIS STEP. DO NOT SKIP.**
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Step 6/7: COMMIT
+Step 5/6: COMMIT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -337,21 +316,20 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 [commit] ✓ Committed: {hash}
 ```
 
-**CHECKPOINT: Save after commit**
-
-```
-[checkpoint] ✓ Saved after commit
+**CHECKPOINT: Mark phase complete**
+```bash
+uv run hooks/ship_state.py phase_done commit
 ```
 
 ---
 
-### Step 7: PR (MANDATORY)
+### Step 6: PR (MANDATORY)
 
 **YOU MUST EXECUTE THIS STEP. DO NOT SKIP.**
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Step 7/7: PR
+Step 6/6: PR
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -372,7 +350,11 @@ Step 7/7: PR
 [pr] ✓ PR created: #{number} {url}
 ```
 
-**CHECKPOINT: Clear checkpoints on success**
+**CHECKPOINT: Mark phase and ship complete**
+```bash
+uv run hooks/ship_state.py phase_done pr
+uv run hooks/ship_state.py complete
+```
 
 ---
 
@@ -390,11 +372,10 @@ Feature: {description}
 Steps Completed:
   ✓ 1. Plan     - .claude/plans/plan-{name}.md
   ✓ 2. Implement - {N} files created, {N} modified
-  ✓ 3. Refactor  - {N} issues fixed
-  ✓ 4. Verify    - Types ✓ Lint ✓ Build ✓ Tests ✓
-  ✓ 5. Review    - Code ✓ Security ✓ Browser ✓
-  ✓ 6. Commit    - {hash}
-  ✓ 7. PR        - #{number}
+  ✓ 3. Verify    - Types ✓ Lint ✓ Build ✓ Tests ✓
+  ✓ 4. Review    - Code ✓ Security ✓ Browser ✓
+  ✓ 5. Commit    - {hash}
+  ✓ 6. PR        - #{number}
 
 Artifacts:
   Plan:   .claude/plans/plan-{name}.md
@@ -415,56 +396,70 @@ Git:
 
 ---
 
-## Checkpoint System
+## State Tracking System
 
-Each step saves a checkpoint for recovery:
+State is persisted in `.claude/ship/current.json` and survives:
+- Context compaction
+- Session restarts
+- Interruptions
 
 ```
 /ship "add feature"
-    ├─ CHECKPOINT: after plan
-    ├─ CHECKPOINT: after implement
-    ├─ CHECKPOINT: after refactor
-    ├─ CHECKPOINT: after verify
-    ├─ CHECKPOINT: after review
-    ├─ CHECKPOINT: after commit
-    └─ Complete: checkpoints cleared
+    │
+    ├─ ship_state.py start "add feature"
+    │
+    ├─ Phase 1: PLAN
+    │   └─ ship_state.py phase_done plan
+    │
+    ├─ Phase 2: IMPLEMENT
+    │   └─ ship_state.py phase_done implement
+    │
+    ├─ Phase 3: VERIFY
+    │   └─ ship_state.py phase_done verify
+    │
+    ├─ Phase 4: REVIEW
+    │   └─ ship_state.py phase_done review
+    │
+    ├─ Phase 5: COMMIT
+    │   └─ ship_state.py phase_done commit
+    │
+    ├─ Phase 6: PR
+    │   └─ ship_state.py phase_done pr
+    │
+    └─ ship_state.py complete
+
 ```
 
-### Recovery Flags
+### Recovery
 
 ```bash
-# Resume from last successful checkpoint
+# Check current status
+uv run hooks/ship_state.py status
+
+# Resume: The ship_loader hook automatically injects state.
+# Just run /ship --continue and follow the <ship-state> context.
 /ship --continue
-
-# Start from specific phase
-/ship --from verify
-
-# Rollback to checkpoint state
-/ship --rollback implement
-
-# View checkpoint status
-/ship --status
 ```
 
 ### On Failure
+
+When a phase fails, the state file preserves your progress:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  ❌ SHIP FAILED at {phase}                                   │
 ├─────────────────────────────────────────────────────────────┤
-│  Error: {description}                                        │
+│  State preserved in: .claude/ship/current.json             │
 │                                                             │
-│  Checkpoints saved:                                         │
-│  ✓ plan      (10:15:00)                                     │
-│  ✓ implement (10:22:00)                                     │
-│  ✓ refactor  (10:25:00)                                     │
-│  ✗ verify    (failed)                                       │
+│  Progress:                                                  │
+│  ✓ plan      (done)                                        │
+│  ✓ implement (done)                                        │
+│  → verify    (in_progress)                                 │
 │                                                             │
 │  Options:                                                   │
-│  • /ship --continue     Resume from verify                  │
-│  • /ship --from verify  Retry verify phase                  │
-│  • /ship --rollback refactor  Undo and retry                │
-│  • Fix manually, then /ship --from verify                   │
+│  • /ship --continue     Resume from current phase          │
+│  • Fix issues manually, then continue                       │
+│  • ship_state.py abort  Cancel and start fresh             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -476,14 +471,13 @@ Each step saves a checkpoint for recovery:
 |------|----------|----------|-----------|
 | Plan | `explorer` | - | ✓ YES |
 | Implement | `web-researcher` (if stuck) | - | ✓ YES |
-| Refactor | `refactorer` (spawns `explorer`) | - | ✓ YES |
 | Verify | `verifier` | - | ✓ YES |
 | Review | `code-reviewer`, `security-auditor`, `performance-auditor`, `accessibility-tester` | ✓ Yes | ✓ YES |
 | Review | `browser-tester` | - | ✓ YES (default) |
 | Commit | `git-automator` | - | ✓ YES |
 | PR | `git-automator` | - | ✓ YES |
 
-**Total: 9 agents, 4 running in parallel during review**
+**Total: 8 agents, 4 running in parallel during review**
 
 ---
 
@@ -492,7 +486,7 @@ Each step saves a checkpoint for recovery:
 | Error | Action |
 |-------|--------|
 | Verification fails 5+ times | STOP, save checkpoint, ask user |
-| Critical review issues | Loop back to refactor |
+| Critical review issues | Fix and re-verify |
 | Security CRITICAL found | STOP immediately, report |
 | Browser issues after 5 iterations | STOP, save checkpoint, report |
 | Git push fails | STOP, save checkpoint, ask user |
@@ -524,13 +518,11 @@ Each step saves a checkpoint for recovery:
 
 1. ✓ Did I execute Step 1 (Plan)?
 2. ✓ Did I execute Step 2 (Implement)?
-3. ✓ Did I execute Step 3 (Refactor)?
-4. ✓ Did I execute Step 4 (Verify)?
-5. ✓ Did I execute Step 5 (Review)?
-6. ✓ Did I verify in browser (unless --skip-browser)?
-7. ✓ Did I execute Step 6 (Commit)?
-8. ✓ Did I execute Step 7 (PR)?
-9. ✓ Did I output the summary?
+3. ✓ Did I execute Step 3 (Verify)?
+4. ✓ Did I execute Step 4 (Review)?
+5. ✓ Did I verify in browser (unless --skip-browser)?
+6. ✓ Did I execute Step 5 (Commit)?
+7. ✓ Did I execute Step 6 (PR)?
+8. ✓ Did I output the summary?
 
 **IF ANY ANSWER IS "NO", GO BACK AND COMPLETE THAT STEP.**
-`

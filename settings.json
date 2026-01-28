@@ -41,6 +41,10 @@
           },
           {
             "type": "command",
+            "command": "uv run hooks/ship_loader.py || true"
+          },
+          {
+            "type": "command",
             "command": "uv run hooks/user_prompt_submit.py --log-only || true"
           }
         ]
@@ -98,6 +102,10 @@
           {
             "type": "command",
             "command": "uv run hooks/state_updater.py || true"
+          },
+          {
+            "type": "command",
+            "command": "uv run hooks/ship_updater.py || true"
           },
           {
             "type": "command",

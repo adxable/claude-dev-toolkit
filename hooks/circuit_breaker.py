@@ -156,19 +156,22 @@ def main():
         input_data = json.load(sys.stdin)
         prompt = input_data.get('prompt', '').lower()
 
-        # Only apply to /ralph
-        if '/ralph' not in prompt and '/adx:ralph' not in prompt:
+        # Apply to /ralph and /ship
+        is_ralph = '/ralph' in prompt or '/adx:ralph' in prompt
+        is_ship = '/ship' in prompt or '/adx:ship' in prompt
+
+        if not is_ralph and not is_ship:
             sys.exit(0)
 
-        # Check for reset flag
+        # Check for reset flag (applies to both commands)
         if '--reset' in prompt:
             cb = CircuitBreaker()
             cb.reset()
             print("[circuit-breaker] Reset complete")
             sys.exit(0)
 
-        # Check for status flag
-        if '--status' in prompt:
+        # Check for status flag (circuit breaker status)
+        if '--cb-status' in prompt:
             cb = CircuitBreaker()
             print(cb.get_status())
             sys.exit(0)
@@ -178,6 +181,7 @@ def main():
         can_continue, reason = cb.should_continue()
 
         if not can_continue:
+            cmd = "ralph" if is_ralph else "ship"
             print(f"""
 ──────────────────────────────────────────────────
 🛑 CIRCUIT BREAKER TRIGGERED
@@ -185,9 +189,9 @@ def main():
 {reason}
 
 Options:
-  /ralph --status   View detailed status
-  /ralph --reset    Reset and retry
-  Fix issues manually, then /ralph --reset
+  /{cmd} --status   View detailed status
+  /{cmd} --reset    Reset circuit breaker
+  Fix issues manually, then retry
 ──────────────────────────────────────────────────
 """)
             sys.exit(1)
