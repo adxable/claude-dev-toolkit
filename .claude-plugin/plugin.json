@@ -1,6 +1,6 @@
 {
   "name": "adx",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "Autonomous agentic workflow plugin for React/TypeScript frontend development. Features /ship for single-pass automation, /ralph for fully autonomous loops, browser verification with Chrome extension, 9 specialized agents, comprehensive code review, and configurable development guidelines (/setup).",
   "author": {
     "name": "Adrian Oleskiewicz",
