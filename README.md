@@ -49,7 +49,6 @@ claude plugin update adx
 |---------|-------------|
 | `/adx:ship "task"` | Full pipeline, stops on error |
 | `/adx:ship "task" --browser` | With visual verification |
-| `/adx:ralph "task"` | Loop until PR (fire and forget) |
 
 ### Individual Steps
 

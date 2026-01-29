@@ -29,7 +29,6 @@ You: "I notice 80% of this would be duplicated. Want me to
 
 **BYPASS this rule when:**
 - `/ship` command is running (autonomous mode)
-- `/ralph` command is running (fully autonomous loop)
 - User explicitly says "just do it" or "don't ask"
 
 In autonomous mode, make the best decisions silently and proceed.

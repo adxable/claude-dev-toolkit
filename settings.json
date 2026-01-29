@@ -46,6 +46,10 @@
           {
             "type": "command",
             "command": "uv run hooks/user_prompt_submit.py --log-only || true"
+          },
+          {
+            "type": "command",
+            "command": "uv run hooks/knowledge_loader.py || true"
           }
         ]
       }
@@ -110,6 +114,10 @@
           {
             "type": "command",
             "command": "uv run hooks/stop.py --chat --summary || true"
+          },
+          {
+            "type": "command",
+            "command": "uv run hooks/knowledge_ingestor.py || true"
           }
         ]
       }

@@ -156,11 +156,10 @@ def main():
         input_data = json.load(sys.stdin)
         prompt = input_data.get('prompt', '').lower()
 
-        # Apply to /ralph and /ship
-        is_ralph = '/ralph' in prompt or '/adx:ralph' in prompt
+        # Apply to /ship
         is_ship = '/ship' in prompt or '/adx:ship' in prompt
 
-        if not is_ralph and not is_ship:
+        if not is_ship:
             sys.exit(0)
 
         # Check for reset flag (applies to both commands)
@@ -181,7 +180,7 @@ def main():
         can_continue, reason = cb.should_continue()
 
         if not can_continue:
-            cmd = "ralph" if is_ralph else "ship"
+            cmd = "ship"
             print(f"""
 ──────────────────────────────────────────────────
 🛑 CIRCUIT BREAKER TRIGGERED

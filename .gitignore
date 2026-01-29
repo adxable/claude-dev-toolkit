@@ -1,1 +1,4 @@
 .DS_Store
+
+# Personal memory (per-developer, not shared)
+memory/local/

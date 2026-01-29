@@ -11,7 +11,7 @@
         "source": "github",
         "repo": "adxable/adx-toolkit"
       },
-      "description": "Autonomous agentic workflow plugin for React/TypeScript frontend development. Features /ship, /ralph, browser verification, 9 specialized agents.",
+      "description": "Autonomous agentic workflow plugin for React/TypeScript frontend development. Features /ship, browser verification, 9 specialized agents.",
       "version": "3.1.0"
     }
   ]

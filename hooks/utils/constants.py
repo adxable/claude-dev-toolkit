@@ -39,3 +39,28 @@ def ensure_session_log_dir(session_id: str) -> Path:
     log_dir = get_session_log_dir(session_id)
     log_dir.mkdir(parents=True, exist_ok=True)
     return log_dir
+
+
+def get_memory_dir() -> Path:
+    """Get the memory/ directory relative to the toolkit root."""
+    # hooks/utils/constants.py -> hooks/utils -> hooks -> toolkit root
+    root = Path(__file__).resolve().parent.parent.parent
+    d = root / "memory"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def get_knowledge_dir() -> Path:
+    """Get the shared knowledge directory (memory/knowledge/)."""
+    d = get_memory_dir() / "knowledge"
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "fragments").mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def get_local_dir() -> Path:
+    """Get the personal/local knowledge directory (memory/local/)."""
+    d = get_memory_dir() / "local"
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "fragments").mkdir(parents=True, exist_ok=True)
+    return d

@@ -185,9 +185,9 @@ def format_config_summary(
 
 
 def is_autonomous_mode(prompt: str) -> bool:
-    """Check if running in autonomous mode (ship/ralph)"""
+    """Check if running in autonomous mode (ship)"""
     prompt_lower = prompt.lower()
-    autonomous_commands = ['/ship', '/ralph', '/adx:ship', '/adx:ralph']
+    autonomous_commands = ['/ship', '/adx:ship']
     return any(cmd in prompt_lower for cmd in autonomous_commands)
 
 
