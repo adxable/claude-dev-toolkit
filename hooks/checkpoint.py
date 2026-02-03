@@ -65,7 +65,7 @@ class CheckpointManager:
         if not checkpoint:
             return None
 
-        phases_order = ['plan', 'implement', 'refactor', 'verify', 'review', 'commit', 'pr']
+        phases_order = ['plan', 'implement', 'verify', 'review', 'commit', 'pr']
         last_phase = checkpoint.get('last_phase')
 
         if last_phase in phases_order:
@@ -119,7 +119,7 @@ def format_checkpoint_status(manager: CheckpointManager) -> str:
     output += "📍 CHECKPOINTS\n"
     output += "─" * 50 + "\n\n"
 
-    phases_order = ['plan', 'implement', 'refactor', 'verify', 'review', 'commit', 'pr']
+    phases_order = ['plan', 'implement', 'verify', 'review', 'commit', 'pr']
 
     for phase in phases_order:
         if phase in checkpoints:

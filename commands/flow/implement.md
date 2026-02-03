@@ -40,13 +40,13 @@ Files modified:
   - path/to/existing/file.tsx
 
 Next step:
-  /refactor
+  /verify
 ```
 
 ## Workflow Position
 
 ```
-/plan → /implement → /refactor → /verify → /review → /commit → /pr
-           ↑
-       YOU ARE HERE
+/plan → /implement → /verify → /review → /commit → /pr
+             ↑
+         YOU ARE HERE
 ```

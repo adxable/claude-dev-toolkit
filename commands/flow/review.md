@@ -283,8 +283,7 @@ Browser verification:
   Status:       All passing / {N} unresolved
 
 Next step:
-  /refactor (if code issues need fixing)
-  /commit (if all issues resolved)
+  /commit
 ```
 
 ## Usage Examples
@@ -306,9 +305,9 @@ Next step:
 ## Workflow Position
 
 ```
-/plan → /implement → /refactor → /verify → /review → /commit → /pr
-                                              ↑
-                                          YOU ARE HERE
+/plan → /implement → /verify → /review → /commit → /pr
+                                  ↑
+                              YOU ARE HERE
 ```
 
 ## Parallel Execution Note

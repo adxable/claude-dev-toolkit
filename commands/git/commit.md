@@ -67,7 +67,7 @@ Next step:
 ## Workflow Position
 
 ```
-/plan → /implement → /refactor → /verify → /review → /commit → /pr
-                                                        ↑
-                                                    YOU ARE HERE
+/plan → /implement → /verify → /review → /commit → /pr
+                                            ↑
+                                        YOU ARE HERE
 ```

@@ -209,7 +209,7 @@ Based on config, check if ESLint rules exist and suggest additions:
 │  Commands that use these standards:                         │
 │  • /adx:plan - Structure recommendations                    │
 │  • /adx:implement - Applies stack patterns                  │
-│  • /adx:refactor - Enforces conventions                     │
+│  • /refactor - Enforces conventions (optional)              │
 │  • /adx:review - Validates against config                   │
 │                                                             │
 │  To reconfigure: /adx:setup                                 │
@@ -242,7 +242,7 @@ If `$ARGUMENTS` is "quick", skip questions and use:
 ## Workflow Position
 
 ```
-/setup → /plan → /implement → /refactor → /verify → /review → /commit → /pr
+/setup → /plan → /implement → /verify → /review → /commit → /pr
    ↑
    RUN ONCE at project start (or when stack changes)
 ```

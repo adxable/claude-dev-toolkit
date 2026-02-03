@@ -84,7 +84,7 @@ def format_ship_context(state: dict) -> str:
 ACTIVE SHIP: {ship_id}
 Feature: {description}
 
-Current Phase: {current.upper()} ({PHASES.index(current) + 1}/7)
+Current Phase: {current.upper()} ({PHASES.index(current) + 1}/6)
 
 Progress:
 {phase_status}

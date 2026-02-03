@@ -75,8 +75,8 @@ Files changed: {N}
 ## Workflow Position
 
 ```
-/plan → /implement → /refactor → /verify → /review → /commit → /pr
-                                                                 ↑
-                                                             YOU ARE HERE
-                                                                 ✓ DONE
+/plan → /implement → /verify → /review → /commit → /pr
+                                                     ↑
+                                                 YOU ARE HERE
+                                                     ✓ DONE
 ```

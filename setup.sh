@@ -256,38 +256,50 @@ ask_agents() {
 
     echo "Select which agents to enable:"
     echo ""
-    echo -e "${CYAN}Core Agents (recommended):${NC}"
-    echo "  1) explorer        - Fast codebase search"
-    echo "  2) web-researcher  - Internet research for debugging"
-    echo "  3) code-reviewer   - Code review with reports"
-    echo "  4) git-automator   - Smart commits and PRs"
-    echo "  5) refactorer      - Code cleanup, remove any types"
-    echo "  6) performance-auditor - Bundle size, React performance"
-    echo "  7) browser-tester  - Visual UI testing"
+    echo -e "${CYAN}Core Agents (used by /adx:ship):${NC}"
+    echo "  1) explorer          - Fast codebase search"
+    echo "  2) verifier          - Type check, lint, build, test"
+    echo "  3) code-reviewer     - Code review with reports"
+    echo "  4) security-auditor  - Scan for vulnerabilities"
+    echo "  5) performance-auditor - Bundle and runtime analysis"
+    echo "  6) browser-tester    - Visual UI testing"
+    echo "  7) git-automator     - Smart commits and PRs"
+    echo "  8) web-researcher    - Debug with internet research"
+    echo ""
+    echo -e "${CYAN}Standalone Agents:${NC}"
+    echo "  9) planner           - Create detailed plans"
+    echo "  10) implementer      - Execute plans step-by-step"
+    echo "  11) refactorer       - Code cleanup, remove any types"
+    echo "  12) pattern-researcher - Research new patterns online"
     echo ""
     echo -e "${CYAN}Optional Agents:${NC}"
-    echo "  8) accessibility-tester - WCAG compliance"
-    echo "  9) docs-generator  - README, JSDoc generation"
+    echo "  13) accessibility-tester - WCAG compliance"
+    echo "  14) docs-generator   - README, JSDoc generation"
     echo ""
 
-    read -p "Enter numbers separated by spaces (or 'all') [all]: " selections
-    selections=${selections:-all}
+    read -p "Enter numbers separated by spaces (or 'all') [1-8]: " selections
+    selections=${selections:-"1 2 3 4 5 6 7 8"}
 
     if [ "$selections" = "all" ]; then
-        SELECTED_AGENTS=("explorer" "web-researcher" "code-reviewer" "git-automator" "refactorer" "performance-auditor" "browser-tester" "accessibility-tester" "docs-generator")
+        SELECTED_AGENTS=("explorer" "verifier" "code-reviewer" "security-auditor" "performance-auditor" "browser-tester" "git-automator" "web-researcher" "planner" "implementer" "refactorer" "pattern-researcher" "accessibility-tester" "docs-generator")
     else
         SELECTED_AGENTS=()
         for sel in $selections; do
             case "$sel" in
                 1) SELECTED_AGENTS+=("explorer") ;;
-                2) SELECTED_AGENTS+=("web-researcher") ;;
+                2) SELECTED_AGENTS+=("verifier") ;;
                 3) SELECTED_AGENTS+=("code-reviewer") ;;
-                4) SELECTED_AGENTS+=("git-automator") ;;
-                5) SELECTED_AGENTS+=("refactorer") ;;
-                6) SELECTED_AGENTS+=("performance-auditor") ;;
-                7) SELECTED_AGENTS+=("browser-tester") ;;
-                8) SELECTED_AGENTS+=("accessibility-tester") ;;
-                9) SELECTED_AGENTS+=("docs-generator") ;;
+                4) SELECTED_AGENTS+=("security-auditor") ;;
+                5) SELECTED_AGENTS+=("performance-auditor") ;;
+                6) SELECTED_AGENTS+=("browser-tester") ;;
+                7) SELECTED_AGENTS+=("git-automator") ;;
+                8) SELECTED_AGENTS+=("web-researcher") ;;
+                9) SELECTED_AGENTS+=("planner") ;;
+                10) SELECTED_AGENTS+=("implementer") ;;
+                11) SELECTED_AGENTS+=("refactorer") ;;
+                12) SELECTED_AGENTS+=("pattern-researcher") ;;
+                13) SELECTED_AGENTS+=("accessibility-tester") ;;
+                14) SELECTED_AGENTS+=("docs-generator") ;;
             esac
         done
     fi
@@ -558,20 +570,33 @@ EOF
 install_files() {
     section "Installing Files"
 
-    # Create .claude directory
+    # Create .claude directory structure
     mkdir -p "$PROJECT_DIR/.claude"
+    mkdir -p "$PROJECT_DIR/.claude/plans"
+    mkdir -p "$PROJECT_DIR/.claude/reviews"
+    mkdir -p "$PROJECT_DIR/.claude/checkpoints"
 
     # Generate CLAUDE.md
     generate_claude_md
 
-    # Copy settings.json
-    cp "$SCRIPT_DIR/settings.json" "$PROJECT_DIR/.claude/settings.json"
+    # Copy settings.json to project root (not .claude/)
+    cp "$SCRIPT_DIR/settings.json" "$PROJECT_DIR/settings.json"
     success "Copied settings.json"
 
     # Install hooks
     if [ "$INSTALL_HOOKS" = "yes" ]; then
-        mkdir -p "$PROJECT_DIR/.claude/hooks"
-        cp -r "$SCRIPT_DIR/hooks/"*.py "$PROJECT_DIR/.claude/hooks/" 2>/dev/null || true
+        mkdir -p "$PROJECT_DIR/hooks"
+        mkdir -p "$PROJECT_DIR/hooks/utils"
+        mkdir -p "$PROJECT_DIR/hooks/utils/llm"
+        # Copy hook files
+        cp -r "$SCRIPT_DIR/hooks/"*.py "$PROJECT_DIR/hooks/" 2>/dev/null || true
+        cp -r "$SCRIPT_DIR/hooks/utils/"*.py "$PROJECT_DIR/hooks/utils/" 2>/dev/null || true
+        cp -r "$SCRIPT_DIR/hooks/utils/llm/"*.py "$PROJECT_DIR/hooks/utils/llm/" 2>/dev/null || true
+        # Copy README
+        [ -f "$SCRIPT_DIR/hooks/README.md" ] && cp "$SCRIPT_DIR/hooks/README.md" "$PROJECT_DIR/hooks/" 2>/dev/null || true
+        # Copy __init__.py files
+        touch "$PROJECT_DIR/hooks/utils/__init__.py"
+        touch "$PROJECT_DIR/hooks/utils/llm/__init__.py"
         success "Installed hooks"
     fi
 
@@ -583,23 +608,103 @@ install_files() {
 
     # Install memory system
     if [ "$INSTALL_MEMORY" = "yes" ]; then
-        mkdir -p "$PROJECT_DIR/.claude/memory"
-        cp -r "$SCRIPT_DIR/memory/"* "$PROJECT_DIR/.claude/memory/" 2>/dev/null || true
+        mkdir -p "$PROJECT_DIR/memory"
+        mkdir -p "$PROJECT_DIR/memory/knowledge/fragments"
+        mkdir -p "$PROJECT_DIR/memory/local/fragments"
+        # Copy memory template files if they exist
+        [ -f "$SCRIPT_DIR/memory/decisions.md" ] && cp "$SCRIPT_DIR/memory/decisions.md" "$PROJECT_DIR/memory/" 2>/dev/null || true
+        [ -f "$SCRIPT_DIR/memory/lessons.md" ] && cp "$SCRIPT_DIR/memory/lessons.md" "$PROJECT_DIR/memory/" 2>/dev/null || true
+        [ -f "$SCRIPT_DIR/memory/conventions.md" ] && cp "$SCRIPT_DIR/memory/conventions.md" "$PROJECT_DIR/memory/" 2>/dev/null || true
+        # Create index files if not present
+        [ ! -f "$PROJECT_DIR/memory/knowledge/index.json" ] && echo '{}' > "$PROJECT_DIR/memory/knowledge/index.json"
+        [ ! -f "$PROJECT_DIR/memory/local/index.json" ] && echo '{}' > "$PROJECT_DIR/memory/local/index.json"
         success "Installed memory system"
     fi
-
-    # Create plans and reviews directories
-    mkdir -p "$PROJECT_DIR/.claude/plans"
-    mkdir -p "$PROJECT_DIR/.claude/reviews"
-    success "Created plans and reviews directories"
 
     # Install state tracking
     if [ "$INSTALL_STATE" = "yes" ]; then
         mkdir -p "$PROJECT_DIR/.claude/state"
-        cp -r "$SCRIPT_DIR/state/"* "$PROJECT_DIR/.claude/state/" 2>/dev/null || true
+        # Create template state files
+        cat > "$PROJECT_DIR/.claude/state/PROJECT.md" << 'STATEEOF'
+# Project Overview
+
+## Vision
+[Describe what you're building]
+
+## Tech Stack
+- Framework:
+- Styling:
+- State:
+- API:
+
+## Key Decisions
+-
+STATEEOF
+        cat > "$PROJECT_DIR/.claude/state/STATE.md" << 'STATEEOF'
+# Current State
+
+## Active Phase
+Phase 1: Setup
+
+## Current Task
+[What you're working on]
+
+## Blockers
+None
+
+## Recent Decisions
+-
+STATEEOF
+        cat > "$PROJECT_DIR/.claude/state/ROADMAP.md" << 'STATEEOF'
+# Project Roadmap
+
+## Phase 1: Foundation
+- [ ] Project setup
+- [ ] Core architecture
+
+## Phase 2: Features
+- [ ] Feature 1
+- [ ] Feature 2
+
+## Phase 3: Polish
+- [ ] Testing
+- [ ] Documentation
+STATEEOF
         success "Installed state tracking templates"
         info "  Run /adx:init-state to configure your project"
     fi
+
+    # Update .gitignore
+    update_gitignore
+}
+
+# Update .gitignore with ADX entries
+update_gitignore() {
+    local gitignore="$PROJECT_DIR/.gitignore"
+
+    # Create if doesn't exist
+    [ ! -f "$gitignore" ] && touch "$gitignore"
+
+    # Entries to add
+    local entries=(
+        "# ADX Toolkit - Personal (don't share)"
+        ".claude/"
+        "memory/local/"
+        "logs/"
+        ""
+        "# Python"
+        "__pycache__/"
+        "*.pyc"
+    )
+
+    # Check and add each entry
+    for entry in "${entries[@]}"; do
+        if [ -n "$entry" ] && ! grep -qF "$entry" "$gitignore" 2>/dev/null; then
+            echo "$entry" >> "$gitignore"
+        fi
+    done
+
+    success "Updated .gitignore"
 }
 
 # Print completion message
@@ -610,37 +715,78 @@ print_completion() {
     echo ""
     echo -e "${BOLD}Files created:${NC}"
     echo "  $PROJECT_DIR/CLAUDE.md"
-    echo "  $PROJECT_DIR/.claude/settings.json"
-    [ "$INSTALL_HOOKS" = "yes" ] && echo "  $PROJECT_DIR/.claude/hooks/"
+    echo "  $PROJECT_DIR/settings.json"
+    [ "$INSTALL_HOOKS" = "yes" ] && echo "  $PROJECT_DIR/hooks/"
     [ "$INSTALL_MCP" = "yes" ] && echo "  $PROJECT_DIR/.claude/mcp.json"
-    [ "$INSTALL_MEMORY" = "yes" ] && echo "  $PROJECT_DIR/.claude/memory/"
+    [ "$INSTALL_MEMORY" = "yes" ] && echo "  $PROJECT_DIR/memory/"
     [ "$INSTALL_STATE" = "yes" ] && echo "  $PROJECT_DIR/.claude/state/"
+    echo "  $PROJECT_DIR/.claude/plans/"
+    echo "  $PROJECT_DIR/.claude/reviews/"
     echo ""
     echo -e "${BOLD}Next steps:${NC}"
     echo ""
     echo "  1. Review and customize CLAUDE.md for your project"
     echo ""
     echo "  2. Start using ADX commands:"
-    echo -e "     ${CYAN}/ship \"add user authentication\"${NC}  - Full autonomous workflow"
-    echo -e "     ${CYAN}/plan \"feature description\"${NC}     - Create implementation plan"
-    echo -e "     ${CYAN}/review --browser${NC}               - Code review + visual testing"
+    echo -e "     ${CYAN}/adx:ship \"add user auth\"${NC}       - Full autonomous workflow"
+    echo -e "     ${CYAN}/adx:plan \"feature\"${NC}            - Create implementation plan"
+    echo -e "     ${CYAN}/adx:investigate /url \"bug\"${NC}    - Browser investigation + plan"
+    echo -e "     ${CYAN}/adx:verify${NC}                     - Type check, lint, build, test"
+    echo -e "     ${CYAN}/adx:review --browser${NC}           - Code review + visual testing"
     echo ""
-    echo "  3. Read the docs: https://github.com/adxable/adx-toolkit"
+    echo "  3. Pipeline flow:"
+    echo -e "     ${CYAN}PLAN → IMPLEMENT → VERIFY → REVIEW → COMMIT → PR${NC}"
     echo ""
-    echo -e "${BOLD}${GREEN}Happy coding! 🚀${NC}"
+    echo "  4. Read the docs: https://github.com/adxable/adx-toolkit"
     echo ""
+    echo -e "${BOLD}${GREEN}Happy coding!${NC}"
+    echo ""
+}
+
+# Check prerequisites
+check_prerequisites() {
+    # Check if Claude Code is installed
+    if ! command -v claude &> /dev/null; then
+        echo -e "${RED}Error: Claude Code CLI not found.${NC}"
+        echo ""
+        echo "Please install Claude Code first:"
+        echo "  npm install -g @anthropic-ai/claude-code"
+        echo ""
+        exit 1
+    fi
+
+    # Check if uv is installed (for hooks)
+    if ! command -v uv &> /dev/null; then
+        warn "uv not found. Hooks require uv for execution."
+        echo ""
+        echo "Install uv: https://github.com/astral-sh/uv"
+        echo "  curl -LsSf https://astral.sh/uv/install.sh | sh"
+        echo ""
+        if [ "$(ask_yes_no "Continue without uv?" "no")" != "yes" ]; then
+            exit 1
+        fi
+    fi
 }
 
 # Main
 main() {
     print_banner
 
-    echo "Welcome to ADX Toolkit setup!"
-    echo "This wizard will configure ADX for your project."
+    echo "Welcome to ADX Toolkit project setup!"
+    echo ""
+    echo "This wizard configures ADX for a specific project:"
+    echo "  • CLAUDE.md with your tech stack conventions"
+    echo "  • Hooks for smart context injection"
+    echo "  • Memory system for persistent knowledge"
+    echo "  • State tracking for session continuity"
+    echo ""
+    echo -e "${CYAN}Note: This is project setup. For plugin installation, run:${NC}"
+    echo -e "  ${BOLD}bash <(curl -fsSL https://raw.githubusercontent.com/adxable/adx-toolkit/main/install-adx.sh)${NC}"
     echo ""
     echo -e "Press ${BOLD}Enter${NC} to continue or ${BOLD}Ctrl+C${NC} to cancel."
     read
 
+    check_prerequisites
     ask_project_dir
     ask_tech_stack
     ask_features

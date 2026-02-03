@@ -170,8 +170,8 @@ Scan for hardcoded secrets in the src directory
 ## Workflow Position
 
 ```
-/plan → /implement → /refactor → /verify → /review → /commit → /pr
-                                              ↑
-                                security-auditor runs here
-                                (parallel with code-reviewer)
+/plan → /implement → /verify → /review → /commit → /pr
+                                  ↑
+                        security-auditor runs here
+                        (parallel with code-reviewer)
 ```

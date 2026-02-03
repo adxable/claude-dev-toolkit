@@ -1,4 +1,14 @@
 .DS_Store
 
+# Python
+__pycache__/
+*.pyc
+
+# Test artifacts
+logs/
+
 # Personal memory (per-developer, not shared)
 memory/local/
+
+# Runtime state (created in target projects, not in toolkit)
+.claude/

@@ -13,8 +13,8 @@ import sys
 from pathlib import Path
 from datetime import datetime
 
-DECISIONS_FILE = Path('.claude/memory/decisions.md')
-LESSONS_FILE = Path('.claude/memory/lessons.md')
+DECISIONS_FILE = Path('memory/decisions.md')
+LESSONS_FILE = Path('memory/lessons.md')
 REVIEWS_DIR = Path('.claude/reviews')
 
 
@@ -84,7 +84,7 @@ def main():
         session_commands = input_data.get('commands', [])
 
         # Only prompt after certain commands
-        significant_commands = ['/ship', '/review', '/implement', '/refactor']
+        significant_commands = ['/ship', '/review', '/implement', '/verify']
         had_significant = any(cmd in str(session_commands) for cmd in significant_commands)
 
         if not had_significant:

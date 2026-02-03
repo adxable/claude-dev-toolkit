@@ -130,7 +130,7 @@ def cmd_phase_done(phase: str):
         print(f"""
 [checkpoint] ✓ {phase.upper()} complete (git: {git_sha})
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Step {phase_idx + 2}/7: {next_phase.upper()}
+Step {phase_idx + 2}/6: {next_phase.upper()}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 """)
     else:

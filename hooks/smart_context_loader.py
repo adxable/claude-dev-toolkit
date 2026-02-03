@@ -142,7 +142,7 @@ CONTEXT_RULES: List[Dict[str, Any]] = [
             r"extract.*",
         ],
         "skills": [],
-        "context": "Refactoring - use /refactor command, ensure tests pass before and after",
+        "context": "Refactoring - ensure tests pass before and after, use refactorer agent if needed",
         "priority": "medium"
     },
     {

@@ -249,7 +249,7 @@ Next step:
 ## Workflow Position
 
 ```
-/plan → /implement → /refactor → /verify → /review → /commit → /pr
-                                    ↑
-                        Now includes testing!
+/plan → /implement → /verify → /review → /commit → /pr
+                        ↑
+            Now includes testing!
 ```

@@ -1,92 +1,162 @@
-# Claude Code Hooks
+# ADX Toolkit Hooks
 
-This directory contains Python hooks for Claude Code that provide logging, skill activation, and session management functionality.
+Hooks extend Claude Code by running scripts at specific events. All hooks are registered in `settings.json`.
 
 ## Prerequisites
 
 - Python 3.8+ (3.11+ recommended)
 - [uv](https://github.com/astral-sh/uv) - Fast Python package installer and resolver
 
-## Hooks Overview
+## Hook Events
 
-| Hook | Event | Description |
-|------|-------|-------------|
-| `user_prompt_submit.py` | UserPromptSubmit | Logs user prompts and optionally validates them |
-| `skill-activation-prompt.py` | UserPromptSubmit | Detects keywords/patterns to suggest relevant skills |
-| `pre_tool_use.py` | PreToolUse | Logs tool usage before execution |
-| `post_tool_use.py` | PostToolUse | Logs tool usage after execution |
-| `notification.py` | Notification | Logs notifications from Claude |
-| `stop.py` | Stop | Logs session stop events, optionally saves transcript |
-| `subagent_stop.py` | SubagentStop | Logs subagent stop events |
-| `pre_compact.py` | PreCompact | Logs context compaction events |
+| Event | When | Purpose |
+|-------|------|---------|
+| `UserPromptSubmit` | User sends a message | Inject context, detect patterns |
+| `PreToolUse` | Before tool execution | Monitor, validate |
+| `PostToolUse` | After tool execution | Track, log |
+| `Stop` | Conversation ends | Persist state, cleanup |
+| `SubagentStop` | Subagent completes | Track subagent results |
+| `PreCompact` | Before context compaction | Preserve important info |
+| `Notification` | System notifications | Desktop alerts |
 
-## Installation
+## Hooks Reference
 
-1. Copy the `hooks` directory to your project root or `.claude/hooks/`
+### UserPromptSubmit Hooks
 
-2. Add hook configuration to your `.claude/settings.json` or `.claude/settings.local.json`:
+| Hook | Purpose | Output |
+|------|---------|--------|
+| `dev_standards_loader.py` | Load CLAUDE.md standards | Context injection |
+| `context_loader.py` | Load session context from `.claude/context/` | Context injection |
+| `state_loader.py` | Load state tracking from `.claude/state/` | State banner |
+| `smart_context_loader.py` | Detect task type, suggest skills | Context hints |
+| `skill-activation-prompt.py` | Auto-activate skills for detected patterns | Skill injection |
+| `circuit_breaker.py` | Detect repeated failures, suggest alternatives | Warning banner |
+| `ship_loader.py` | Inject /ship workflow state | Phase tracking |
+| `checkpoint.py` | Handle `--status`, `--continue`, `--rollback` flags | Checkpoint info |
+| `user_prompt_submit.py` | Log prompts (with `--log-only`) | Session log |
+| `knowledge_loader.py` | Semantic knowledge retrieval | Knowledge injection |
 
-```json
-{
-  "hooks": {
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "uv run hooks/skill-activation-prompt.py || true"
-          },
-          {
-            "type": "command",
-            "command": "uv run hooks/user_prompt_submit.py --log-only || true"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "uv run hooks/stop.py --chat || true"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+### Stop Hooks
 
-See `settings.example.json` for a complete configuration.
+| Hook | Purpose | Output |
+|------|---------|--------|
+| `context_updater.py` | Save session context to `.claude/context/` | Persisted context |
+| `cost_tracker.py` | Track token usage and costs | Cost log |
+| `memory_updater.py` | Prompt for memory updates after significant work | Memory prompt |
+| `state_updater.py` | Update state tracking files | Persisted state |
+| `ship_updater.py` | Update /ship workflow state | Ship log |
+| `stop.py` | Chat completion, summary generation | Session summary |
+| `knowledge_ingestor.py` | Extract and store learned knowledge | New fragments |
+
+### Other Hooks
+
+| Hook | Event | Purpose |
+|------|-------|---------|
+| `pre_tool_use.py` | PreToolUse | Tool execution monitoring |
+| `post_tool_use.py` | PostToolUse | Tool result tracking |
+| `subagent_stop.py` | SubagentStop | Subagent result aggregation |
+| `pre_compact.py` | PreCompact | Context preservation |
+| `notification.py` | Notification | Desktop notifications |
+
+### Standalone Scripts
+
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| `ship_state.py` | Ship state CLI | `uv run hooks/ship_state.py start/phase_done/status/abort` |
+
+## Utilities (`hooks/utils/`)
+
+| Module | Purpose |
+|--------|---------|
+| `constants.py` | Shared paths, session management |
+| `knowledge_store.py` | TF-IDF indexed fragment storage |
+| `knowledge_retriever.py` | Context-aware knowledge retrieval |
+| `llm/oai.py` | OpenAI API wrapper |
+| `llm/anth.py` | Anthropic API wrapper |
 
 ## Directory Structure
 
 ```
 hooks/
-├── notification.py           # Notification event logger
-├── post_tool_use.py          # Post-tool execution logger
-├── pre_tool_use.py           # Pre-tool execution logger
-├── pre_compact.py            # Context compaction logger
-├── skill-activation-prompt.py # Skill detection and suggestion
+├── checkpoint.py             # Ship checkpoint management
+├── circuit_breaker.py        # Failure detection and recovery
+├── context_loader.py         # Session context injection
+├── context_updater.py        # Session context persistence
+├── cost_tracker.py           # Usage and cost tracking
+├── dev_standards_loader.py   # CLAUDE.md standards loading
+├── knowledge_loader.py       # Knowledge retrieval
+├── knowledge_ingestor.py     # Knowledge extraction
+├── memory_updater.py         # Memory update prompts
+├── notification.py           # Desktop notifications
+├── post_tool_use.py          # Post-tool logging
+├── pre_tool_use.py           # Pre-tool logging
+├── pre_compact.py            # Context compaction handler
+├── ship_loader.py            # /ship state injection
+├── ship_state.py             # Ship state CLI
+├── ship_updater.py           # /ship state persistence
+├── skill-activation-prompt.py # Skill detection
+├── smart_context_loader.py   # Context pattern detection
+├── state_loader.py           # State tracking injection
+├── state_updater.py          # State tracking persistence
 ├── stop.py                   # Session stop handler
 ├── subagent_stop.py          # Subagent stop handler
-├── user_prompt_submit.py     # User prompt logger/validator
-├── settings.example.json     # Example settings configuration
-├── README.md                 # This file
-├── logs/                     # Session logs directory (auto-created)
-└── utils/
-    ├── __init__.py
-    ├── constants.py          # Shared constants and helpers
-    └── llm/
-        ├── __init__.py
-        ├── anth.py           # Anthropic API helper
-        └── oai.py            # OpenAI API helper
+├── user_prompt_submit.py     # Prompt logging
+├── utils/
+│   ├── constants.py          # Shared constants
+│   ├── knowledge_store.py    # TF-IDF fragment storage
+│   ├── knowledge_retriever.py # Knowledge retrieval engine
+│   └── llm/
+│       ├── anth.py           # Anthropic API helper
+│       └── oai.py            # OpenAI API helper
+└── README.md
+```
+
+## Error Handling Pattern
+
+All hooks follow the same pattern:
+
+```python
+def main():
+    try:
+        input_data = json.load(sys.stdin)
+        # ... hook logic ...
+        sys.exit(0)
+    except Exception:
+        sys.exit(0)  # Never block Claude
+```
+
+External registration uses `|| true`:
+```json
+{
+  "type": "command",
+  "command": "uv run hooks/my_hook.py || true"
+}
+```
+
+## Data Flow
+
+```
+User Prompt
+     │
+     ▼
+UserPromptSubmit hooks
+     │ (context injection)
+     ▼
+Claude processes
+     │
+     ▼
+PreToolUse → Tool → PostToolUse
+     │
+     ▼
+Stop hooks
+     │ (persistence)
+     ▼
+Session End
 ```
 
 ## Logging
 
-All hooks log to `logs/{session_id}/` directory, creating JSON files for each event type:
+Hooks log to `logs/{session_id}/` directory, creating JSON files for each event type:
 - `user_prompt_submit.json`
 - `skill_activation.json`
 - `pre_tool_use.json`
@@ -95,7 +165,9 @@ All hooks log to `logs/{session_id}/` directory, creating JSON files for each ev
 - `stop.json`
 - `subagent_stop.json`
 - `pre_compact.json`
-- `chat.json` (when `--chat` flag is used with stop hooks)
+- `chat.json` (when `--chat` flag is used)
+- `smart_context.json`
+- `cost_tracking.json`
 
 ## Environment Variables
 
@@ -105,7 +177,7 @@ All hooks log to `logs/{session_id}/` directory, creating JSON files for each ev
 | `CLAUDE_PROJECT_DIR` | Project directory for skill rules | `~/project` |
 | `ANTHROPIC_API_KEY` | API key for Anthropic LLM helpers | - |
 | `OPENAI_API_KEY` | API key for OpenAI LLM helpers | - |
-| `ENGINEER_NAME` | Name for personalized completion messages | - |
+| `ENGINEER_NAME` | Name for personalized messages | - |
 
 ## Command Line Options
 
@@ -114,29 +186,15 @@ All hooks log to `logs/{session_id}/` directory, creating JSON files for each ev
 - `--log-only` - Only log prompts, no validation
 
 ### stop.py / subagent_stop.py
-- `--chat` - Save conversation transcript to `chat.json`
+- `--chat` - Save conversation transcript
+- `--summary` - Generate session summary
 
 ### notification.py
-- `--notify` - Enable TTS notifications (placeholder for custom implementation)
+- `--notify` - Enable desktop notifications
 
-## Skill Activation
+## Adding a New Hook
 
-The `skill-activation-prompt.py` hook reads skill rules from `.claude/skills/skill-rules.json`:
-
-```json
-{
-  "version": "1.0",
-  "skills": {
-    "frontend-dev-guidelines": {
-      "promptTriggers": {
-        "keywords": ["react", "component", "typescript"],
-        "intentPatterns": ["create.*component", "implement.*feature"]
-      },
-      "priority": "high",
-      "enforcement": "suggest"
-    }
-  }
-}
-```
-
-Priority levels: `critical`, `high`, `medium`, `low`
+1. Create `hooks/my_hook.py` with the standard pattern
+2. Register in `settings.json` under the appropriate event
+3. Use `|| true` suffix for silent failures
+4. Read JSON from stdin, print output to stdout

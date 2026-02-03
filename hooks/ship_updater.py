@@ -58,7 +58,7 @@ def format_progress_reminder(state: dict) -> str:
 SHIP IN PROGRESS: {ship_id}
 Feature: {description}
 
-Completed: {len(completed)}/7 phases
+Completed: {len(completed)}/6 phases
 Current: {current.upper()}
 
 {"Phase " + incomplete_phase.upper() + " is incomplete." if incomplete_phase else "Ready for next phase."}

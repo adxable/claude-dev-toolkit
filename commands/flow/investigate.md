@@ -132,7 +132,7 @@ Take screenshots and document:
 
 ### 4. Phase 2: Create Plan
 
-After browser investigation, use the `planner` agent approach:
+After browser investigation, create the implementation plan:
 
 ```
 ═══════════════════════════════════════════════════
@@ -312,13 +312,13 @@ Root Cause:
 ## Workflow Position
 
 ```
-/investigate → /implement → /refactor → /verify → /review → /commit → /pr
+/investigate → /implement → /verify → /review → /commit → /pr
        ↑
    YOU ARE HERE
    (combines browser discovery + planning)
 
 Alternative flow (no browser):
-/plan → /implement → /refactor → /verify → /review → /commit → /pr
+/plan → /implement → /verify → /review → /commit → /pr
 ```
 
 ## Rules

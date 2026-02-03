@@ -1,9 +1,6 @@
 #!/usr/bin/env -S uv run --script
 # /// script
-# requires-python = ">=3.11"
-# dependencies = [
-#     "python-dotenv",
-# ]
+# requires-python = ">=3.8"
 # ///
 
 """
@@ -28,220 +25,229 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent))
+
+from utils.knowledge_store import (
+    DualKnowledgeStore,
+    Fragment,
+    find_similar,
+    SCOPE_SHARED,
+    SCOPE_PERSONAL
+)
 from utils.constants import ensure_session_log_dir
-from utils.knowledge_store import add_fragment, is_duplicate
-
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    pass
 
 
-# ---------------------------------------------------------------------------
-# Transcript parsing
-# ---------------------------------------------------------------------------
+# Patterns for extracting learnings from transcripts
+LEARNING_PATTERNS = [
+    {
+        "name": "decision",
+        "patterns": [
+            r"decided to (?:use|implement|go with|choose) (.+?)(?:\.|,|$)",
+            r"(?:the|our) decision (?:is|was) to (.+?)(?:\.|,|$)",
+            r"going (?:to|with) (.+?) (?:approach|pattern|method|solution)",
+            r"(?:will|should) use (.+?) (?:for|to|when)",
+        ],
+        "tags": ["decision", "architecture"],
+        "scope": SCOPE_SHARED
+    },
+    {
+        "name": "pattern_used",
+        "patterns": [
+            r"using (?:the )?(.+?) pattern",
+            r"implemented (?:using|with) (.+?)(?:\.|,|$)",
+            r"following (?:the )?(.+?) (?:approach|convention|pattern)",
+        ],
+        "tags": ["pattern", "implementation"],
+        "scope": SCOPE_SHARED
+    },
+    {
+        "name": "error_resolved",
+        "patterns": [
+            r"(?:fixed|resolved|solved) (?:the )?(.+?) (?:error|issue|bug|problem)",
+            r"(?:the )?(?:error|issue|bug) was (?:caused by|due to) (.+?)(?:\.|,|$)",
+            r"(?:solution|fix) (?:is|was) to (.+?)(?:\.|,|$)",
+        ],
+        "tags": ["error", "debugging", "solution"],
+        "scope": SCOPE_SHARED
+    },
+    {
+        "name": "lesson_learned",
+        "patterns": [
+            r"learned that (.+?)(?:\.|,|$)",
+            r"(?:remember|note) that (.+?)(?:\.|,|$)",
+            r"(?:important|key) (?:thing|point|insight): (.+?)(?:\.|,|$)",
+            r"(?:turns out|it seems) (?:that )?(.+?)(?:\.|,|$)",
+        ],
+        "tags": ["lesson", "insight"],
+        "scope": SCOPE_SHARED
+    },
+    {
+        "name": "workflow_preference",
+        "patterns": [
+            r"(?:i |I )prefer (?:to )?(.+?)(?:\.|,|$)",
+            r"(?:my|the user's) preference is (.+?)(?:\.|,|$)",
+            r"always (?:want|like) to (.+?)(?:\.|,|$)",
+        ],
+        "tags": ["workflow", "preference", "personal"],
+        "scope": SCOPE_PERSONAL
+    }
+]
 
-def parse_transcript(transcript_path: str) -> List[Dict[str, Any]]:
-    """Parse JSONL transcript into messages."""
-    messages: List[Dict[str, Any]] = []
+# File patterns mentioned in sessions
+FILE_PATTERN = re.compile(r'(?:src/|\.claude/|\./)[\w/.-]+\.\w+')
+
+# Minimum content length for a fragment
+MIN_CONTENT_LENGTH = 20
+MAX_CONTENT_LENGTH = 500
+
+
+def extract_learnings_from_text(text: str) -> List[Dict[str, Any]]:
+    """
+    Extract potential learnings from text using pattern matching.
+
+    Returns list of dicts with 'content', 'tags', 'scope'.
+    """
+    learnings = []
+
+    for category in LEARNING_PATTERNS:
+        for pattern in category["patterns"]:
+            matches = re.finditer(pattern, text, re.IGNORECASE)
+            for match in matches:
+                content = match.group(0).strip()
+
+                # Filter by length
+                if len(content) < MIN_CONTENT_LENGTH:
+                    continue
+                if len(content) > MAX_CONTENT_LENGTH:
+                    content = content[:MAX_CONTENT_LENGTH] + "..."
+
+                learnings.append({
+                    "content": content,
+                    "tags": category["tags"],
+                    "scope": category["scope"],
+                    "category": category["name"]
+                })
+
+    return learnings
+
+
+def extract_files_from_text(text: str) -> List[str]:
+    """Extract file paths mentioned in text."""
+    matches = FILE_PATTERN.findall(text)
+    # Deduplicate while preserving order
+    seen = set()
+    unique = []
+    for path in matches:
+        if path not in seen:
+            seen.add(path)
+            unique.append(path)
+    return unique[:20]  # Limit to 20
+
+
+def parse_transcript(transcript_path: str) -> str:
+    """
+    Parse JSONL transcript into text.
+
+    Returns concatenated assistant messages.
+    """
+    text_parts = []
+
     try:
         with open(transcript_path, "r") as f:
             for line in f:
                 line = line.strip()
-                if line:
-                    try:
-                        messages.append(json.loads(line))
-                    except json.JSONDecodeError:
-                        pass
+                if not line:
+                    continue
+
+                try:
+                    msg = json.loads(line)
+                    role = msg.get("role", "")
+
+                    # Only extract from assistant messages
+                    if role != "assistant":
+                        continue
+
+                    content = msg.get("content", msg.get("message", ""))
+
+                    # Handle list content (tool use results)
+                    if isinstance(content, list):
+                        for item in content:
+                            if isinstance(item, dict) and item.get("type") == "text":
+                                text_parts.append(item.get("text", ""))
+                            elif isinstance(item, str):
+                                text_parts.append(item)
+                    elif isinstance(content, str):
+                        text_parts.append(content)
+
+                except json.JSONDecodeError:
+                    continue
+
     except (OSError, IOError):
         pass
-    return messages
 
+    return "\n".join(text_parts)
 
-# ---------------------------------------------------------------------------
-# Extraction heuristics
-# ---------------------------------------------------------------------------
-
-def extract_decisions(messages: List[Dict[str, Any]]) -> List[Dict[str, str]]:
-    """Find decision-like statements in assistant messages."""
-    decisions: List[Dict[str, str]] = []
-    decision_patterns = [
-        r"(?:decided|choosing|going with|using|picked|selected|opting for)\s+(.{10,120})",
-        r"(?:the approach|the solution|the fix|the pattern)\s+(?:is|will be)\s+(.{10,120})",
-        r"(?:instead of|rather than)\s+(.{10,80}),?\s+(?:we|I)(?:'ll)?\s+(.{10,80})",
-    ]
-
-    for msg in messages:
-        content = _extract_text(msg)
-        if not content or msg.get("role") == "user":
-            continue
-        for pattern in decision_patterns:
-            for match in re.finditer(pattern, content, re.IGNORECASE):
-                text = match.group(0).strip()
-                if len(text) > 20:
-                    decisions.append({
-                        "content": text[:300],
-                        "type": "decision",
-                    })
-
-    return decisions[:5]
-
-
-def extract_error_resolutions(messages: List[Dict[str, Any]]) -> List[Dict[str, str]]:
-    """Find error -> fix pairs in the session."""
-    resolutions: List[Dict[str, str]] = []
-    error_context: Optional[str] = None
-
-    for msg in messages:
-        content = _extract_text(msg)
-        if not content:
-            continue
-
-        if re.search(r"(?:error|failed|exception|traceback|cannot|unable)", content, re.IGNORECASE):
-            for line in content.split("\n"):
-                if re.search(r"(?:error|Error|failed|Failed|Exception)", line):
-                    error_context = line.strip()[:200]
-                    break
-
-        if error_context and msg.get("role") != "user":
-            fix_patterns = [
-                r"(?:fix|fixed|resolved|solution|the issue was|the problem was)\s+(.{10,150})",
-            ]
-            for pattern in fix_patterns:
-                match = re.search(pattern, content, re.IGNORECASE)
-                if match:
-                    resolutions.append({
-                        "content": f"Error: {error_context}\nResolution: {match.group(0).strip()[:200]}",
-                        "type": "error_resolution",
-                    })
-                    error_context = None
-                    break
-
-    return resolutions[:5]
-
-
-def extract_files_worked_on(messages: List[Dict[str, Any]]) -> List[str]:
-    """Extract file paths from tool use messages."""
-    files: List[str] = []
-    for msg in messages:
-        if msg.get("type") == "tool_use" or "tool" in msg:
-            tool_input = msg.get("input", {})
-            if isinstance(tool_input, dict):
-                path = tool_input.get("file_path", tool_input.get("path", ""))
-                if path and path not in files:
-                    files.append(path)
-    return files[:20]
-
-
-def extract_patterns_used(messages: List[Dict[str, Any]]) -> List[Dict[str, str]]:
-    """Detect coding patterns mentioned in assistant messages."""
-    patterns_found: List[Dict[str, str]] = []
-    pattern_keywords = [
-        r"(?:pattern|approach|technique|strategy|method):\s*(.{10,150})",
-        r"(?:following the|using the|applying the)\s+(\w[\w\s\-]+(?:pattern|approach|technique|convention))",
-    ]
-
-    for msg in messages:
-        content = _extract_text(msg)
-        if not content or msg.get("role") == "user":
-            continue
-        for pk in pattern_keywords:
-            for match in re.finditer(pk, content, re.IGNORECASE):
-                text = match.group(0).strip()[:200]
-                if len(text) > 15:
-                    patterns_found.append({
-                        "content": text,
-                        "type": "pattern",
-                    })
-
-    return patterns_found[:5]
-
-
-def _extract_text(msg: Dict[str, Any]) -> Optional[str]:
-    """Pull text content from various message formats."""
-    content = msg.get("content", msg.get("message", msg.get("output", "")))
-    if isinstance(content, list):
-        parts = []
-        for item in content:
-            if isinstance(item, dict) and item.get("type") == "text":
-                parts.append(item.get("text", ""))
-            elif isinstance(item, str):
-                parts.append(item)
-        return "\n".join(parts)
-    if isinstance(content, str):
-        return content
-    return None
-
-
-# ---------------------------------------------------------------------------
-# Fragment creation
-# ---------------------------------------------------------------------------
 
 def create_session_fragments(
-    decisions: List[Dict[str, str]],
-    resolutions: List[Dict[str, str]],
-    patterns: List[Dict[str, str]],
+    learnings: List[Dict[str, Any]],
     files: List[str],
     session_id: str,
-) -> List[Dict[str, Any]]:
-    """Turn extracted info into knowledge fragments and store them."""
-    created: List[Dict[str, Any]] = []
+    store: DualKnowledgeStore
+) -> List[Fragment]:
+    """
+    Create fragments from extracted learnings and store them.
 
-    for d in decisions:
-        if is_duplicate(d["content"], "shared"):
+    Deduplicates against existing fragments.
+    Returns list of created fragments.
+    """
+    created = []
+
+    for learning in learnings:
+        content = learning["content"]
+        tags = learning["tags"] + ["session-learned"]
+        scope = learning["scope"]
+
+        # Check for duplicates
+        target_store = store.shared if scope == SCOPE_SHARED else store.personal
+        if find_similar(content, target_store, threshold=0.6):
             continue
-        frag = add_fragment(
-            content=d["content"],
-            tags=["decision", "session-learned"],
-            source=f"session:{session_id}",
-            scope="shared",
-        )
-        created.append(frag)
 
-    for r in resolutions:
-        if is_duplicate(r["content"], "shared"):
-            continue
-        frag = add_fragment(
-            content=r["content"],
-            tags=["error-resolution", "debugging", "session-learned"],
+        # Create and store fragment
+        fragment = Fragment(
+            content=content,
+            tags=tags,
             source=f"session:{session_id}",
-            scope="shared",
+            scope=scope
         )
-        created.append(frag)
 
-    for p in patterns:
-        if is_duplicate(p["content"], "shared"):
-            continue
-        frag = add_fragment(
-            content=p["content"],
-            tags=["pattern", "session-learned"],
-            source=f"session:{session_id}",
-            scope="shared",
-        )
-        created.append(frag)
+        store.add(fragment)
+        created.append(fragment)
 
-    if files:
-        summary = f"Session {session_id}: worked on {len(files)} files"
+    # Create a session summary fragment if files were worked on
+    if files and len(created) > 0:
+        summary = f"Session worked on {len(files)} files"
         if files[:5]:
-            summary += " including " + ", ".join(os.path.basename(f) for f in files[:5])
-        if not is_duplicate(summary, "personal"):
-            frag = add_fragment(
+            summary += ": " + ", ".join(os.path.basename(f) for f in files[:5])
+            if len(files) > 5:
+                summary += f" (+{len(files) - 5} more)"
+
+        # Store as personal context
+        if not find_similar(summary, store.personal, threshold=0.7):
+            fragment = Fragment(
                 content=summary,
                 tags=["session-context", "files"],
                 source=f"session:{session_id}",
-                scope="personal",
+                scope=SCOPE_PERSONAL
             )
-            created.append(frag)
+            store.add(fragment)
+            created.append(fragment)
 
     return created
 
 
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
-
 def main():
+    """Hook entry point - runs on Stop event."""
     try:
         input_data = json.load(sys.stdin)
         session_id = input_data.get("session_id", "unknown")
@@ -250,43 +256,50 @@ def main():
         if not transcript_path or not os.path.exists(transcript_path):
             sys.exit(0)
 
-        messages = parse_transcript(transcript_path)
-        if not messages:
+        # Parse transcript
+        text = parse_transcript(transcript_path)
+        if not text or len(text) < 100:
             sys.exit(0)
 
-        decisions = extract_decisions(messages)
-        resolutions = extract_error_resolutions(messages)
-        patterns = extract_patterns_used(messages)
-        files = extract_files_worked_on(messages)
+        # Extract learnings
+        learnings = extract_learnings_from_text(text)
+        files = extract_files_from_text(text)
 
-        created = create_session_fragments(
-            decisions, resolutions, patterns, files, session_id
-        )
+        if not learnings:
+            sys.exit(0)
 
+        # Create and store fragments
+        store = DualKnowledgeStore()
+        created = create_session_fragments(learnings, files, session_id, store)
+
+        # Log results
         if created:
-            log_dir = ensure_session_log_dir(session_id)
-            log_file = log_dir / "knowledge_ingested.json"
-            with open(log_file, "w") as f:
-                json.dump(
-                    {
-                        "timestamp": datetime.utcnow().isoformat() + "Z",
-                        "session_id": session_id,
-                        "fragments_created": len(created),
-                        "fragments": [
-                            {"id": fr["id"], "tags": fr["tags"], "scope": fr["scope"]}
-                            for fr in created
-                        ],
-                    },
-                    f,
-                    indent=2,
-                )
+            try:
+                log_dir = ensure_session_log_dir(session_id)
+                log_file = log_dir / "knowledge_ingested.json"
+                with open(log_file, "w") as f:
+                    json.dump(
+                        {
+                            "timestamp": datetime.utcnow().isoformat() + "Z",
+                            "session_id": session_id,
+                            "fragments_created": len(created),
+                            "fragments": [
+                                {"id": fr.id, "tags": fr.tags, "scope": fr.scope}
+                                for fr in created
+                            ],
+                        },
+                        f,
+                        indent=2,
+                    )
+            except Exception:
+                pass  # Don't fail if logging fails
 
         sys.exit(0)
 
     except json.JSONDecodeError:
         sys.exit(0)
     except Exception as e:
-        print(f"Error in knowledge_ingestor: {e}", file=sys.stderr)
+        print(f"Knowledge ingestor error: {e}", file=sys.stderr)
         sys.exit(0)
 
 

@@ -122,7 +122,7 @@ Verify the current project - run type check, lint, build, and tests
 Part of the verification step in the development workflow:
 
 ```
-/plan → /implement → /refactor → /verify → /review → /commit → /pr
-                                    ↑
-                            verifier agent runs here
+/plan → /implement → /verify → /review → /commit → /pr
+                        ↑
+                verifier agent runs here
 ```
