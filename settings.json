@@ -10,7 +10,7 @@
     "defaultMode": "acceptEdits"
   },
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": ["context7"],
+  "enabledMcpjsonServers": ["context7", "sequential-thinking"],
   "hooks": {
     "UserPromptSubmit": [
       {

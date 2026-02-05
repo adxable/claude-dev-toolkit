@@ -239,7 +239,7 @@ ADX Toolkit uses minimal MCP configuration. Most functionality uses Claude Code'
 | Server | Purpose | Enabled by Default |
 |--------|---------|-------------------|
 | `context7` | Up-to-date library documentation | ✅ Yes |
-| `sequential-thinking` | Enhanced reasoning for complex problems | ❌ No |
+| `sequential-thinking` | Enhanced reasoning for complex problems | ✅ Yes |
 
 **External MCP (user-installed):**
 
@@ -262,13 +262,6 @@ In `settings.json`:
 ```json
 {
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": ["context7"]
-}
-```
-
-To enable sequential-thinking for complex reasoning tasks:
-```json
-{
   "enabledMcpjsonServers": ["context7", "sequential-thinking"]
 }
 ```
